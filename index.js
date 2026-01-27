@@ -13,8 +13,8 @@ console.log(process.env.PORT,process.env.DB_URL)
 connectDB();
 
 const corsOptions = {
-  origin: "https://snap.shareurinterest.com",
-  // origin: "http://localhost:3000",
+  // origin: "https://snap.shareurinterest.com",
+  origin: "http://localhost:3000",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
