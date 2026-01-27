@@ -3,9 +3,9 @@ const mongoose = require("mongoose");
 const userModel = require("../model/userModel");
 require("dotenv").config();
 
-const Jwt_swcret = process.env.Jwt_swcret;
+const JWT_SECRET = process.env.JWT_SECRET;
 
-module.exports = (req, res, next) => {
+const requiredLogin = (req, res, next) => {
   const { authorization } = req.headers;
 
   if (!authorization) {
@@ -13,7 +13,7 @@ module.exports = (req, res, next) => {
   }
   const token = authorization.replace("Bearer ", "");
 
-  jwt.verify(token, Jwt_swcret, (err, payload) => {
+  jwt.verify(token, JWT_SECRET, (err, payload) => {
     if (err) {
       return res.status(401).json(err);
     }
@@ -29,3 +29,5 @@ module.exports = (req, res, next) => {
     });
   });
 };
+
+module.exports = requiredLogin;

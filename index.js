@@ -6,72 +6,77 @@ const path = require("path");
 const requiredLogin = require("./middleware/requiredLogin");
 require("dotenv").config();
 
-const port = process.env.port || 9000;
-const frontend_url = process.env.frontend_url;
-
-//port = 8000;
-
-//connect to database
+const app = express();
+const port = process.env.PORT || 9000;
+console.log(process.env.PORT,process.env.DB_URL)
+// DB
 connectDB();
 
-const app = express();
-console.log("this is backend frontend url : ",frontend_url);
 const corsOptions = {
-  origin: [
-    frontend_url,
-    "http://192.168.1.3:3000",
-    // "http://192.168.1.4:3000",
-    "http://127.0.0.117:3000",
-    "http://192.1687.1.85:3000",
-    "http://localhost:5173",
-    "http://localhost:3000",
-    "http://localhost",
-  ],
+  origin: "https://snap.shareurinterest.com",
+  // origin: "http://localhost:3000",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
   exposedHeaders: ["set-cookie"],
 };
 
+// CORS (this part is FINE ✅)
 app.use(cors(corsOptions));
 
-app.options("*", cors(corsOptions)); // <– important for preflight
+app.options("*", cors(corsOptions));
 app.use(express.json());
 
-//image path link to frentend to backend
+// ✅ STATIC FIRST
 app.use("/api/public", express.static(path.join(__dirname, "public")));
 
-//router
-app.use("/api/auth", require("./routes/authRouter"));
-app.use("/api/post", require("./routes/createPost"));
-app.use("/api/user", require("./routes/userRouter"));
-app.use("/api/stories", require("./routes/storyRouter"));
-app.use("/api/messages", require("./routes/messageRouter"));
+const authRouter = require("./routes/authRouter");
+const postRouter = require("./routes/createPost");
+const userRouter = require("./routes/userRouter");
+const storyRouter = require("./routes/storyRouter");
+const messageRouter = require("./routes/messageRouter");
 
-app.get("/api/verify", requiredLogin, (req, res) => {
-  try {
-    if (req.user) {
-      return res.status(200).json({
-        data: {
-          id: req.user._id,
-          name: req.user.name,
-          email: req.user.email,
-          userName: req.user.userName,
-          Photo: req.user.Photo,
-        },
-      });
-    } else {
-      return res.status(401).json({ message: "Unauthorized" });
-    }
-  } catch (error) {
-    console.log(error);
-  }
-  res.send("api is running");
+const testRouter = require("./routes/testRouter");
+const userModel = require("./model/userModel");
+
+// ✅ ROUTES
+app.use("/api/auth", authRouter);
+app.use("/api/post", postRouter);
+app.use("/api/user", userRouter);
+app.use("/api/stories", storyRouter);
+app.use("/api/messages", messageRouter);
+
+app.use("/api/test", testRouter);
+
+// ✅ HEALTH CHECK
+app.get("/api/health",async (req, res) => {
+  const existUser = await userModel.find();
+console.log(existUser,"exitingUser")
+
+  res.json({ status: "Health Check OK" });
 });
 
-//using error handler
+
+// ✅ VERIFY
+app.get("/api/verify", requiredLogin, (req, res) => {
+  if (!req.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  res.status(200).json({
+    data: {
+      id: req.user._id,
+      name: req.user.name,
+      email: req.user.email,
+      userName: req.user.userName,
+      Photo: req.user.Photo,
+    },
+  });
+});
+
+// ERROR HANDLER LAST
 app.use(errorHandler);
 
 app.listen(port, () => {
-  console.log(`app start listnening on port ${port}`);
+  console.log(`Server running on port ${port}`);
 });

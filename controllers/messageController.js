@@ -6,13 +6,13 @@ const User = require("../model/userModel");
 const path = require("path");
 const fs = require("fs");
 
-createMessage = expressAsyncHandler(async (req, res) => {
-  const createMessage = await Message.create({});
-  res.send("fdsnksdjf");
-});
+// createMessage = expressAsyncHandler(async (req, res) => {
+//   const createMessage = await Message.create({});
+//   res.send("fdsnksdjf");
+// });
 
 //create new message
-createMessage = expressAsyncHandler(async (req, res) => {
+const createMessage = expressAsyncHandler(async (req, res) => {
   // const basePath = `${req.protocol}://${req.get("host")}/public`;
   const basePath = `/public`;
 
@@ -67,7 +67,7 @@ createMessage = expressAsyncHandler(async (req, res) => {
 });
 
 //get messages
-getMessages = expressAsyncHandler(async (req, res) => {
+const getMessages = expressAsyncHandler(async (req, res) => {
   if (!req.query.receivedBy) {
     res.status(404);
     throw new Error("required receivedBy");
@@ -89,7 +89,7 @@ getMessages = expressAsyncHandler(async (req, res) => {
 });
 
 //download image
-downloadFile = expressAsyncHandler(async (req, res) => {
+const downloadFile = expressAsyncHandler(async (req, res) => {
   const message = await Message.findById(req.params.id);
 
   if (!message) {

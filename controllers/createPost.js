@@ -4,7 +4,7 @@ const Post = require("../model/post");
 const expressAsyncHandler = require("express-async-handler");
 
 //create post
-createPost = expressAsyncHandler(async (req, res) => {
+const createPost = expressAsyncHandler(async (req, res) => {
   const { title, pic } = req.body;
   if (!title || !pic) {
     res.status(442);
@@ -25,7 +25,7 @@ createPost = expressAsyncHandler(async (req, res) => {
 });
 
 //create new post store in local storage
-createNewPost = expressAsyncHandler(async (req, res) => {
+const createNewPost = expressAsyncHandler(async (req, res) => {
   // const basePath = `${req.protocol}://${req.get("host")}/public`;
   const basePath = `/public`;
 
@@ -68,7 +68,7 @@ createNewPost = expressAsyncHandler(async (req, res) => {
 });
 
 //get allpost
-allposts = expressAsyncHandler(async (req, res) => {
+const allposts = expressAsyncHandler(async (req, res) => {
   let limit = req.query.limit;
   let skip = req.query.skip;
 
@@ -109,7 +109,7 @@ allposts = expressAsyncHandler(async (req, res) => {
 });
 
 //get auth post
-mypost = expressAsyncHandler(async (req, res) => {
+const mypost = expressAsyncHandler(async (req, res) => {
   const mypost = await Post.find({ postedBy: req.user._id })
     .populate("postedBy", "_id userName user")
     .populate("comments.postedBy", "_id userName user")
@@ -118,7 +118,7 @@ mypost = expressAsyncHandler(async (req, res) => {
 });
 
 //update add like
-likepost = expressAsyncHandler(async (req, res) => {
+const likepost = expressAsyncHandler(async (req, res) => {
   if (!req.body.postId) {
     res.status(404);
     throw new Error("Post not found");
@@ -137,7 +137,7 @@ likepost = expressAsyncHandler(async (req, res) => {
 });
 
 //update remove the like
-unlikepost = expressAsyncHandler(async (req, res) => {
+const unlikepost = expressAsyncHandler(async (req, res) => {
   if (!req.body.postId) {
     res.status(404);
     throw new Error("Post not found");
@@ -156,7 +156,7 @@ unlikepost = expressAsyncHandler(async (req, res) => {
 });
 
 //update add comment
-commentPost = expressAsyncHandler(async (req, res) => {
+const commentPost = expressAsyncHandler(async (req, res) => {
   if (!req.body.postId) {
     res.status(404);
     throw new Error("Post not found");
@@ -184,7 +184,7 @@ commentPost = expressAsyncHandler(async (req, res) => {
 });
 
 //delete the post
-deletePost = expressAsyncHandler(async (req, res) => {
+const deletePost = expressAsyncHandler(async (req, res) => {
   const deleteSinglePost = await Post.findById(req.params.postId).populate(
     "postedBy",
     "_id"
@@ -206,7 +206,7 @@ deletePost = expressAsyncHandler(async (req, res) => {
 });
 
 //getsingle post
-getPost = expressAsyncHandler(async (req, res) => {
+const getPost = expressAsyncHandler(async (req, res) => {
   const post = await Post.findById(req.params.id).populate(
     "postedBy",
     "userName Photo"

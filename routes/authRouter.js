@@ -7,4 +7,5 @@ router.route("/register").post(register);
 router.route("/login").post(login);
 router.route("/googleLogin").post(googleLogin);
 
+
 module.exports = router;

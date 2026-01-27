@@ -6,7 +6,7 @@ const Story = require("../model/storyModel");
 const expressAsyncHandler = require("express-async-handler");
 
 //get single user
-getUser = expressAsyncHandler(async (req, res) => {
+const getUser = expressAsyncHandler(async (req, res) => {
   let limit = req.query.limit;
   let skip = req.query.skip;
   const userDetail = await User.findById(req.params.id)
@@ -34,7 +34,7 @@ getUser = expressAsyncHandler(async (req, res) => {
 });
 
 //update add follower in followerslist
-follow = expressAsyncHandler(async (req, res) => {
+const follow = expressAsyncHandler(async (req, res) => {
   const follower = await User.findByIdAndUpdate(
     req.body.followId,
     {
@@ -57,7 +57,7 @@ follow = expressAsyncHandler(async (req, res) => {
 });
 
 //update remove follower from followeer list
-unfollow = expressAsyncHandler(async (req, res) => {
+const unfollow = expressAsyncHandler(async (req, res) => {
   const follower = await User.findByIdAndUpdate(
     req.body.followId,
     {
@@ -80,7 +80,7 @@ unfollow = expressAsyncHandler(async (req, res) => {
 });
 
 //get all follower post max liks and comments and max followers
-followingpost = expressAsyncHandler(async (req, res) => {
+const followingpost = expressAsyncHandler(async (req, res) => {
   let limit = req.query.limit;
   let skip = req.query.skip;
 
@@ -166,7 +166,7 @@ followingpost = expressAsyncHandler(async (req, res) => {
 });
 
 //upload profile pic
-uploadProfilePic = expressAsyncHandler(async (req, res) => {
+const uploadProfilePic = expressAsyncHandler(async (req, res) => {
   // const basePath = `${req.protocol}://${req.get("host")}/public`;
   const basePath = `/public`;
 
@@ -186,7 +186,7 @@ uploadProfilePic = expressAsyncHandler(async (req, res) => {
 });
 
 //followlist get all following list
-followList = expressAsyncHandler(async (req, res) => {
+const followList = expressAsyncHandler(async (req, res) => {
   const follower = await User.find(req.user._id)
     .populate("following", "userName Photo user")
     .select("userName");
@@ -195,7 +195,7 @@ followList = expressAsyncHandler(async (req, res) => {
 });
 
 //search user ,username and post title
-searchUser = expressAsyncHandler(async (req, res) => {
+const searchUser = expressAsyncHandler(async (req, res) => {
   const { key } = req.query;
 
   if (!key) {
@@ -218,13 +218,13 @@ searchUser = expressAsyncHandler(async (req, res) => {
 });
 
 //get all userinfo
-getUsers = expressAsyncHandler(async (req, res) => {
+const getUsers = expressAsyncHandler(async (req, res) => {
   const users = await User.find().select("userName user _id Photo");
   res.json({ title: "all user", data: users });
 });
 
 //update story
-createStory = expressAsyncHandler(async (req, res) => {
+const createStory = expressAsyncHandler(async (req, res) => {
  
   // const expirationTime = new Date(Date.now() + 30 * 1000); // 1 hour from now 60 * 60 * 1000
   // console.log(expirationTime, "line no 239");
@@ -254,7 +254,7 @@ createStory = expressAsyncHandler(async (req, res) => {
 });
 
 //delete story
-deleteStory = expressAsyncHandler(async (req, res) => {
+const deleteStory = expressAsyncHandler(async (req, res) => {
 
   const story = await User.findByIdAndUpdate(
     req.user._id,

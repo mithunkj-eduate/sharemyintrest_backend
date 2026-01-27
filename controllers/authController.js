@@ -9,7 +9,7 @@ const registerSchema = require("../helpers/joiValidatior");
 
 require("dotenv").config();
 
-const refresh = process.env.Jwt_swcret;
+const refresh = process.env.JWT_SECRET;
 
 //unique user name create
 const creatUserName = (data) => {
@@ -44,7 +44,7 @@ const creatUserName = (data) => {
   return newName;
 };
 
-register = expressAsyncHandler(async (req, res) => {
+const register = expressAsyncHandler(async (req, res) => {
   const value = await registerSchema(req.body);
   if (value.error) {
     res.status(400);
@@ -54,7 +54,7 @@ register = expressAsyncHandler(async (req, res) => {
   const existUser = await User.find({
     $or: [{ email: req.body.email }, { userName: req.body.userName }],
   });
-
+console.log(existUser,"exitingUser")
   if (existUser.length > 0) {
     res.status(400);
     throw new Error("user already present");
@@ -77,7 +77,7 @@ register = expressAsyncHandler(async (req, res) => {
 });
 
 //login user
-login = expressAsyncHandler(async (req, res) => {
+const login = expressAsyncHandler(async (req, res) => {
   if (!req.body.email || !req.body.password) {
     return res.status(404).send({ message: "user not found" });
   }
@@ -98,7 +98,7 @@ login = expressAsyncHandler(async (req, res) => {
 });
 
 //googleLogin
-googleLogin = expressAsyncHandler(async (req, res) => {
+const googleLogin = expressAsyncHandler(async (req, res) => {
   const { email_verified, name, userName, email, Photo, clientId } = req.body;
 
   if (email_verified) {

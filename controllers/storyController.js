@@ -6,7 +6,7 @@ const User = require("../model/userModel");
 const path = require("path");
 
 //create new story
-createNewStory = expressAsyncHandler(async (req, res) => {
+const createNewStory = expressAsyncHandler(async (req, res) => {
   // const basePath = `${req.protocol}://${req.get("host")}/public`;
   const basePath = `/public`;
 
@@ -42,7 +42,7 @@ createNewStory = expressAsyncHandler(async (req, res) => {
 });
 
 //get all followers stories
-allStories = expressAsyncHandler(async (req, res) => {
+const allStories = expressAsyncHandler(async (req, res) => {
   const stories = await Story.aggregate([
     {
       $match: {
@@ -84,7 +84,7 @@ allStories = expressAsyncHandler(async (req, res) => {
 });
 
 //get story
-getStory = expressAsyncHandler(async (req, res) => {
+const getStory = expressAsyncHandler(async (req, res) => {
   const story = await Story.find({ postedBy: req.query.storyUserId });
 
   const ids = [];
@@ -105,7 +105,7 @@ getStory = expressAsyncHandler(async (req, res) => {
 });
 
 //story viewers list
-storyViewerslist = expressAsyncHandler(async (req, res) => {
+const storyViewerslist = expressAsyncHandler(async (req, res) => {
   //find story by story id
   const story = await Story.findById(req.params.id);
 
