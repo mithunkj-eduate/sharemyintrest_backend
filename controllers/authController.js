@@ -252,4 +252,5 @@ module.exports = {
   login,
   googleLogin,
   registerBulk,
+  creatUserName
 };

@@ -1,6 +1,8 @@
 const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Schema.Types;
 
+
+
 const pointSchema = new mongoose.Schema({
   type: {
     type: String,
@@ -35,6 +37,19 @@ const postSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+// postSchema.pre("deleteOne", { document: true }, async function (next) {
+//   const postId = this._id;
+
+//   // remove post from all users likedPosts
+//   await mongoose.model("User").updateMany(
+//     { likedPosts: postId },
+//     { $pull: { likedPosts: postId } }
+//   );
+
+//   next();
+// });
+
 
 //create 2dsphere indexing
 postSchema.index({ location: "2dsphere" });

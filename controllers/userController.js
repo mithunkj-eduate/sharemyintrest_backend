@@ -33,28 +33,28 @@ const getUser = expressAsyncHandler(async (req, res) => {
   });
 });
 
-//update add follower in followerslist
-const follow = expressAsyncHandler(async (req, res) => {
-  const follower = await User.findByIdAndUpdate(
-    req.body.followId,
-    {
-      $push: { followers: req.user._id },
-    },
-    { new: true }
-  )
-    .select("-password")
-    .populate("following", "userName Photo user")
-    .populate("followers", "userName Photo user");
-  const following = await User.findByIdAndUpdate(
-    req.user._id,
-    {
-      $push: { following: req.body.followId },
-    },
-    { new: true }
-  );
+  //update add follower in followerslist
+  const follow = expressAsyncHandler(async (req, res) => {
+    const follower = await User.findByIdAndUpdate(
+      req.body.followId,
+      {
+        $push: { followers: req.user._id },
+      },
+      { new: true }
+    )
+      .select("-password")
+      .populate("following", "userName Photo user")
+      .populate("followers", "userName Photo user");
+    const following = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        $push: { following: req.body.followId },
+      },
+      { new: true }
+    );
 
-  res.json({ title: "follower", data: follower });
-});
+    res.json({ title: "follower", data: follower });
+  });
 
 //update remove follower from followeer list
 const unfollow = expressAsyncHandler(async (req, res) => {
