@@ -31,7 +31,7 @@ async function seedFollowers() {
 
     users.forEach((user) => {
       // each user follows 5–25 random users
-      const followCount = random(5, 25);
+      const followCount = random(5, 100);
 
       const shuffled = shuffle(users);
 

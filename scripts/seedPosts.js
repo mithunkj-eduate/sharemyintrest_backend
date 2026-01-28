@@ -13,11 +13,32 @@ const basePath = "/public";
 // images
 // ------------------
 const sampleImages = [
-  "/sample1.jpeg",
-  "/sample2.jpeg",
-  "/sample3.jpeg",
-  "/sample4.jpeg",
-  "/sample5.jpeg",
+  "/sample1.jpg",
+  "/sample2.jpg",
+  "/sample3.jpg",
+  "/sample4.jpg",
+  "/sample5.jpg",
+
+  "/sample6.jpeg",
+  "/sample7.jpeg",
+  "/sample8.jpeg",
+  "/sample9.jpeg",
+  "/sample10.jpeg",
+
+  "sample11.jpg",
+
+  "sample12.jpeg",
+  "sample13.jpeg",
+  "sample14.jpeg",
+  "sample15.jpeg",
+  "sample16.jpeg",
+  "sample17.jpeg",
+  "sample18.jpeg",
+  "sample19.jpeg",
+  "sample20.jpeg",
+  "sample21.jpeg",
+  "sample22.jpeg",
+  "sample23.jpeg",
 ];
 
 // ------------------

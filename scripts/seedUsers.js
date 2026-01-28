@@ -50,7 +50,7 @@ const registerBulk = async (req, res) => {
 
     const users = [];
 
-    for (let i = 0; i < 200; i++) {
+    for (let i = 0; i < 1000; i++) {
       const name = firstNames[i % firstNames.length];
       const id = i + 1;
 
