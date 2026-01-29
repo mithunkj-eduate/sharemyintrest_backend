@@ -54,4 +54,6 @@ const postSchema = new mongoose.Schema(
 //create 2dsphere indexing
 postSchema.index({ location: "2dsphere" });
 
+postSchema.index({ createdAt: -1 })
+
 module.exports = mongoose.model("Post", postSchema);
