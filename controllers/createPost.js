@@ -91,18 +91,18 @@ const allposts = expressAsyncHandler(async (req, res) => {
   //eart radias = 6371
   // 50km is equal 50/6371
   //radias of circal 50km
-  const nearCenterSphereLocation = await Post.find({
-    location: {
-      $geoWithin: {
-        $centerSphere: [[12.910572547882472, 77.58911221181634], 50 / 6371],
-      },
-    },
-  })
-    .populate("postedBy", "_id userName user Photo  followers following")
-    .populate("comments.postedBy", "_id userName user Photo createdAt")
-    .skip(parseInt(skip))
-    .limit(parseInt(limit))
-    .sort("-createdAt");
+  // const nearCenterSphereLocation = await Post.find({
+  //   location: {
+  //     $geoWithin: {
+  //       $centerSphere: [[12.910572547882472, 77.58911221181634], 50 / 6371],
+  //     },
+  //   },
+  // })
+  //   .populate("postedBy", "_id userName user Photo  followers following")
+  //   .populate("comments.postedBy", "_id userName user Photo createdAt")
+  //   .skip(parseInt(skip))
+  //   .limit(parseInt(limit))
+  //   .sort("-createdAt");
 
   res.json({ title: "ALl Posts", data: allPost });
   // res.json({ title: "ALl Posts", data: nearCenterSphereLocation });

@@ -1,0 +1,20 @@
+#  running commend
+# artillery run loadTest.yaml
+# 25 users/second × 120s = 3000 requests "/api/post/allposts?limit=20&&skip=20"
+# 40 users/second * 60s = 3600 requests "/api/post/allposts?limit=20&&skip=20"
+
+config:
+  target: "http://localhost:9000"
+
+  phases:
+    - duration: 60
+      arrivalRate: 40
+
+  defaults:
+    headers:
+      Authorization: "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI2OTdhNTNjYjYxNGRiNmZlNGRhNGMwNWIiLCJpYXQiOjE3Njk2Nzg0MzZ9.38EewCulNTOyNPb6RJTvealKolHC21C0BKXBvbD6Jio"
+
+scenarios:
+  - flow:
+      - get:
+          url: "/api/post/allposts?limit=20&&skip=20"
