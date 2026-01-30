@@ -4,6 +4,10 @@ const cors = require("cors");
 const errorHandler = require("./middleware/errorHandler");
 const path = require("path");
 const requiredLogin = require("./middleware/requiredLogin");
+
+const http = require("http");
+const { Server } = require("socket.io");
+
 require("dotenv").config();
 
 const app = express();
@@ -25,7 +29,19 @@ const corsOptions = {
 app.use(cors(corsOptions));
 
 app.options("*", cors(corsOptions));
+app.use(express.urlencoded({ extended: true }));
+
 app.use(express.json());
+
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: "https://snap.shareurinterest.com",
+    // origin: "http://localhost:3000", // replace with your frontend URL in production
+    methods: ["GET", "POST"],
+  },
+});
 
 // ✅ STATIC FIRST
 app.use("/api/public", express.static(path.join(__dirname, "public")));
@@ -37,7 +53,7 @@ const storyRouter = require("./routes/storyRouter");
 const messageRouter = require("./routes/messageRouter");
 
 const testRouter = require("./routes/testRouter");
-const userModel = require("./model/userModel");
+const chatRouter = require("./routes/chatRoutes");
 
 // ✅ ROUTES
 app.use("/api/auth", authRouter);
@@ -45,6 +61,8 @@ app.use("/api/post", postRouter);
 app.use("/api/user", userRouter);
 app.use("/api/stories", storyRouter);
 app.use("/api/messages", messageRouter);
+
+app.use("/api/chat", chatRouter);
 
 app.use("/api/test", testRouter);
 
@@ -73,6 +91,10 @@ app.get("/api/verify", requiredLogin, (req, res) => {
 // ERROR HANDLER LAST
 app.use(errorHandler);
 
-app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+server.listen(port, () => {
+  console.log(`app listen port ${port}`);
 });
+
+global.onlineUsers = new Map();
+
+require("./sockets/chatSocket")(io);

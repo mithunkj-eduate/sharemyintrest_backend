@@ -1,6 +1,6 @@
 const express = require("express");
 const mongoose = require("mongoose");
-const Message = require("../model/messageModel");
+const Message = require("../model/messageModel1");
 const expressAsyncHandler = require("express-async-handler");
 const User = require("../model/userModel");
 const path = require("path");
