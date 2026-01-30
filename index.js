@@ -8,13 +8,13 @@ require("dotenv").config();
 
 const app = express();
 const port = process.env.PORT || 9000;
-console.log(process.env.PORT,process.env.DB_URL)
+console.log(process.env.PORT, process.env.DB_URL);
 // DB
 connectDB();
 
 const corsOptions = {
-  // origin: "https://snap.shareurinterest.com",
-  origin: "http://localhost:3000",
+  origin: "https://snap.shareurinterest.com",
+  // origin: "http://localhost:3000",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
@@ -49,13 +49,9 @@ app.use("/api/messages", messageRouter);
 app.use("/api/test", testRouter);
 
 // ✅ HEALTH CHECK
-app.get("/api/health",async (req, res) => {
-  const existUser = await userModel.find();
-console.log(existUser,"exitingUser")
-
+app.get("/api/health", async (req, res) => {
   res.json({ status: "Health Check OK" });
 });
-
 
 // ✅ VERIFY
 app.get("/api/verify", requiredLogin, (req, res) => {

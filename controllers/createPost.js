@@ -74,12 +74,20 @@ const allposts = expressAsyncHandler(async (req, res) => {
 
   //find all posts
   const allPost = await Post.find()
-    .sort({ createdAt: -1 })
-    .skip(Number(skip))
-    .limit(Number(limit))
-    .populate("postedBy", "_id userName Photo followers following")
+    .populate("postedBy", "_id userName user Photo  followers following")
     .populate("comments.postedBy", "_id userName user Photo createdAt")
-    .lean();
+    .skip(parseInt(skip))
+    .limit(parseInt(limit))
+    .sort("-createdAt");
+
+
+    // const allPost = await Post.find()
+    // .sort({ createdAt: -1 })
+    // .skip(Number(skip))
+    // .limit(Number(limit))
+    // .populate("postedBy", "_id userName Photo followers following")
+    // .populate("comments.postedBy", "_id userName user Photo createdAt")
+    // .lean();
   // const highLike = await Post.aggregate([
   //   { $unwind: "$likes" },
   //   { $sortByCount: "$likes" },
