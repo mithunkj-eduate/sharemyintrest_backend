@@ -11,6 +11,8 @@ const {
   markAsRead,
   createGroup,
   deleteMessage,
+  uploadFiles,
+  shareMessage,
 } = require("../controllers/chatController");
 const requiredLogin = require("../middleware/requiredLogin");
 
@@ -28,7 +30,11 @@ router.route("/messages/:conversationId").get(requiredLogin, getMessages);
 router.route("/read/:conversationId").put(requiredLogin, markAsRead);
 
 router.route("/group").post(requiredLogin, createGroup);
-router.route("/message/:id").delete(requiredLogin, deleteMessage);
+router.route("/share").post(requiredLogin, shareMessage);
 
+router.route("/message/:id").delete(requiredLogin, deleteMessage);
+router
+  .route("/uploads")
+  .post(requiredLogin, upload.single("file"), uploadFiles);
 
 module.exports = router;

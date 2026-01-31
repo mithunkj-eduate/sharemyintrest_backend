@@ -24,34 +24,52 @@ const getConversations = expressAsyncHandler(async (req, res) => {
   res.json(result);
 });
 
+const getOrCreateConversationData = expressAsyncHandler(
+  async (myId, friendId) => {
+    let convo = await Conversation.findOne({
+      participants: { $all: [myId, friendId] },
+    });
+
+    if (!convo) {
+      convo = await Conversation.create({
+        participants: [myId, friendId],
+      });
+    }
+
+    return convo;
+  }
+);
+
 // POST /api/chat/conversation/:friendId
 const getOrCreateConversation = expressAsyncHandler(async (req, res) => {
   const myId = req.user._id;
   const { friendId } = req.params;
 
-  let convo = await Conversation.findOne({
-    participants: { $all: [myId, friendId] },
-  });
+  const convo = await getOrCreateConversationData(myId, friendId);
 
+  // let convo = await Conversation.findOne({
+  //   participants: { $all: [myId, friendId] },
+  // });
 
-  if (!convo) {
-    convo = await Conversation.create({
-      participants: [myId, friendId],
-    });
-  }
+  // if (!convo) {
+  //   convo = await Conversation.create({
+  //     participants: [myId, friendId],
+  //   });
+  // }
 
   res.json(convo);
 });
 
 // POST /api/chat/message
 const sendMessage = expressAsyncHandler(async (req, res) => {
-  const { conversationId, receiver, text, media } = req.body;
-
+  const { conversationId, receiver, text, media, messageType } = req.body;
+  console.log(messageType, "messageType");
   const message = await Message.create({
     conversation: conversationId,
     sender: req.user._id,
     receiver,
     text: encrypt(text), // encrypted message save db
+    messageType: messageType,
     media,
   });
 
@@ -129,6 +147,40 @@ const deleteMessage = expressAsyncHandler(async (req, res) => {
   res.json({ success: true });
 });
 
+// POST /api/chat/uploadFile
+const uploadFiles = expressAsyncHandler(async (req, res) => {
+  const basePath = `/public`;
+  const mediaUrl = `${basePath}/${req.file.filename}`;
+
+  res.json({
+    mediaUrl,
+    name: req.file.originalname,
+    size: req.file.size,
+  });
+});
+
+const shareMessage = expressAsyncHandler(async (req, res) => {
+  const { receivers, text, messageType } = req.body;
+
+  const messages = await Promise.all(
+    receivers.map(async (id) => {
+      const conversation = await getOrCreateConversationData(req.user._id, id);
+
+      return {
+        conversation: conversation._id,
+        sender: req.user._id,
+        receiver: id,
+        text: encrypt(text),
+        messageType: messageType,
+      };
+    })
+  );
+
+  const saved = await Message.insertMany(messages);
+
+  res.json(saved);
+});
+
 module.exports = {
   getConversations,
   getOrCreateConversation,
@@ -138,4 +190,6 @@ module.exports = {
   getAllUsers,
   createGroup,
   deleteMessage,
+  uploadFiles,
+  shareMessage,
 };
