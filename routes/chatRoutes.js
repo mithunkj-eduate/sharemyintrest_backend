@@ -9,6 +9,8 @@ const {
   sendMessage,
   getMessages,
   markAsRead,
+  createGroup,
+  deleteMessage,
 } = require("../controllers/chatController");
 const requiredLogin = require("../middleware/requiredLogin");
 
@@ -24,5 +26,9 @@ router.route("/message").post(requiredLogin, sendMessage);
 router.route("/messages/:conversationId").get(requiredLogin, getMessages);
 
 router.route("/read/:conversationId").put(requiredLogin, markAsRead);
+
+router.route("/group").post(requiredLogin, createGroup);
+router.route("/message/:id").delete(requiredLogin, deleteMessage);
+
 
 module.exports = router;

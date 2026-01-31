@@ -4,6 +4,11 @@ const { ObjectId } = mongoose.Schema.Types;
 const conversationSchema = new mongoose.Schema(
   {
     participants: [{ type: ObjectId, ref: "User", required: true }], // [user1, user2]
+    isGroup: { type: Boolean, default: false },
+
+    groupName: String,
+    groupPhoto: String,
+    admin: { type: ObjectId, ref: "User" },
 
     lastMessage: {
       type: ObjectId,

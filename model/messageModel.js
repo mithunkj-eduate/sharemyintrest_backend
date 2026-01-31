@@ -26,9 +26,16 @@ const messageSchema = new mongoose.Schema(
 
     messageType: {
       type: String,
-      enum: ["text", "image", "file"],
+      enum: ["text", "image", "file", "audio"],
       default: "text",
     },
+
+    reactions: [
+      {
+        emoji: { type: String },
+        user: { type: ObjectId, ref: "User" },
+      },
+    ],
 
     isRead: {
       type: Boolean,
@@ -39,6 +46,10 @@ const messageSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+
+    isDeleted: { type: Boolean, default: false },
+    deletedFor: [{ type: ObjectId, ref: "User" }],
+    // duration: Number
   },
   { timestamps: true }
 );
