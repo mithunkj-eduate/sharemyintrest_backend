@@ -33,28 +33,28 @@ const getUser = expressAsyncHandler(async (req, res) => {
   });
 });
 
-  //update add follower in followerslist
-  const follow = expressAsyncHandler(async (req, res) => {
-    const follower = await User.findByIdAndUpdate(
-      req.body.followId,
-      {
-        $push: { followers: req.user._id },
-      },
-      { new: true }
-    )
-      .select("-password")
-      .populate("following", "userName Photo user")
-      .populate("followers", "userName Photo user");
-    const following = await User.findByIdAndUpdate(
-      req.user._id,
-      {
-        $push: { following: req.body.followId },
-      },
-      { new: true }
-    );
+//update add follower in followerslist
+const follow = expressAsyncHandler(async (req, res) => {
+  const follower = await User.findByIdAndUpdate(
+    req.body.followId,
+    {
+      $push: { followers: req.user._id },
+    },
+    { new: true }
+  )
+    .select("-password")
+    .populate("following", "userName Photo user")
+    .populate("followers", "userName Photo user");
+  const following = await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $push: { following: req.body.followId },
+    },
+    { new: true }
+  );
 
-    res.json({ title: "follower", data: follower });
-  });
+  res.json({ title: "follower", data: follower });
+});
 
 //update remove follower from followeer list
 const unfollow = expressAsyncHandler(async (req, res) => {
@@ -134,8 +134,6 @@ const followingpost = expressAsyncHandler(async (req, res) => {
   //   .sort("-createdAt");
   // console.log(followingposts, "line no 102");
 
-  
-
   const postLength = await Post.find({
     postedBy: { $in: req.user.following },
   });
@@ -144,7 +142,6 @@ const followingpost = expressAsyncHandler(async (req, res) => {
   const following = await User.find(req.user._id)
     .populate("following", "userName Photo user story")
     .select("-password");
-
 
   //update views count in posts
   let postsIds = [];
@@ -195,8 +192,9 @@ const followList = expressAsyncHandler(async (req, res) => {
 });
 
 //search user ,username and post title
+//  /api/user/searchUser?key=${text}&&limit=${20}&&skip=${skip}
 const searchUser = expressAsyncHandler(async (req, res) => {
-  const { key } = req.query;
+  const { key, limit, skip } = req.query;
 
   if (!key) {
     res.status(442);
@@ -209,8 +207,14 @@ const searchUser = expressAsyncHandler(async (req, res) => {
         userName: { $regex: key, $options: "i" },
       },
     ],
-  });
-  const post = await Post.find({ body: { $regex: key, $options: "i" } });
+  })
+    .skip(parseInt(skip))
+    .limit(parseInt(limit))
+    .sort("-createdAt");
+  const post = await Post.find({ body: { $regex: key, $options: "i" } })
+    .skip(parseInt(skip))
+    .limit(parseInt(limit))
+    .sort("-createdAt");
   // .limit(15)
   // .skip(15);
 
@@ -225,7 +229,6 @@ const getUsers = expressAsyncHandler(async (req, res) => {
 
 //update story
 const createStory = expressAsyncHandler(async (req, res) => {
- 
   // const expirationTime = new Date(Date.now() + 30 * 1000); // 1 hour from now 60 * 60 * 1000
   // console.log(expirationTime, "line no 239");
 
@@ -255,7 +258,6 @@ const createStory = expressAsyncHandler(async (req, res) => {
 
 //delete story
 const deleteStory = expressAsyncHandler(async (req, res) => {
-
   const story = await User.findByIdAndUpdate(
     req.user._id,
     {
