@@ -13,6 +13,7 @@ const {
   deleteMessage,
   uploadFiles,
   shareMessage,
+  downloadChatFile,
 } = require("../controllers/chatController");
 const requiredLogin = require("../middleware/requiredLogin");
 
@@ -36,5 +37,6 @@ router.route("/message/:id").delete(requiredLogin, deleteMessage);
 router
   .route("/uploads")
   .post(requiredLogin, upload.single("file"), uploadFiles);
+router.route("/downloadFile/:id").get(requiredLogin, downloadChatFile);
 
 module.exports = router;

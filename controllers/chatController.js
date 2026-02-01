@@ -4,6 +4,8 @@ const User = require("../model/userModel");
 const expressAsyncHandler = require("express-async-handler");
 const { encrypt, decrypt } = require("../utils/encrypt");
 const { decryptMessage } = require("../utils/decryptMessage");
+const path = require("path");
+const fs = require("fs");
 
 // GET /api/chat
 const getConversations = expressAsyncHandler(async (req, res) => {
@@ -84,7 +86,7 @@ const sendMessage = expressAsyncHandler(async (req, res) => {
 
 // GET /api/chat/messages/:conversationId
 const getMessages = expressAsyncHandler(async (req, res) => {
-  const { page = 0 } = req.query;
+  const { page = 1 } = req.query;
 
   const limit = 20;
 
@@ -93,7 +95,7 @@ const getMessages = expressAsyncHandler(async (req, res) => {
   })
     .sort({ createdAt: -1 })
     .limit(limit)
-    .skip(page * limit);
+    .skip((page - 1) * limit);
 
   const decrypted = messages.map((m) => ({
     ...m.toObject(),
@@ -181,6 +183,40 @@ const shareMessage = expressAsyncHandler(async (req, res) => {
   res.json(saved);
 });
 
+// GET
+// download image
+//  /api/chat/downloadFile/${messageId}
+const downloadChatFile = expressAsyncHandler(async (req, res) => {
+  const message = await Message.findById(req.params.id);
+
+  if (!message) {
+    res.status(404);
+    throw new Error("not found messgae");
+  }
+
+  if (message.media) {
+    //url image split get filename url http://localhost:8000/public/20200630_0601591714114545840.jpg
+    const fileName = message.media.split("public/");
+
+    //image path
+    const imagePath = path.join(__dirname, `../public/${fileName[1]}`);
+
+    // Read the image file
+    fs.readFile(imagePath, (err, data) => {
+      if (err) {
+        console.error("Error reading image file:", err);
+        res.status(500).send("Internal Server Error");
+        return;
+      }
+      // Send the image file as a response
+      res.contentType("image/jpeg");
+      res.send(data);
+    });
+  } else {
+    res.status(404).send("File not found");
+  }
+});
+
 module.exports = {
   getConversations,
   getOrCreateConversation,
@@ -192,4 +228,5 @@ module.exports = {
   deleteMessage,
   uploadFiles,
   shareMessage,
+  downloadChatFile,
 };
