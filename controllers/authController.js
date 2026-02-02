@@ -81,21 +81,25 @@ const register = expressAsyncHandler(async (req, res) => {
 
 //login user
 const login = expressAsyncHandler(async (req, res) => {
-  if (!req.body.email || !req.body.password) {
-    return res.status(404).send({ message: "user not found" });
-  }
-  const user = await User.findOne({ email: req.body.email });
+  try {
+    if (!req.body.email || !req.body.password) {
+      return res.status(404).send({ message: "user not found" });
+    }
+    const user = await User.findOne({ email: req.body.email });
 
-  if (user && bcrypt.compareSync(req.body.password, user.password)) {
-    const token = jwt.sign({ userId: user._id }, refresh);
-    const { _id, userName, email, Photo } = user;
+    if (user && bcrypt.compareSync(req.body.password, user.password)) {
+      const token = jwt.sign({ userId: user._id }, refresh);
+      const { _id, userName, email, Photo } = user;
 
-    res.json({
-      user: { _id, userName, email, Photo },
-      token: token,
-    });
-  } else {
-    res.status(404).send({ message: "user not found" });
+      res.json({
+        user: { _id, userName, email, Photo },
+        token: token,
+      });
+    } else {
+      res.status(404).send({ message: "user not found" });
+    }
+  } catch (error) {
+    res.status(400).send({ message: "db error", error: error });
   }
 });
 
@@ -252,5 +256,5 @@ module.exports = {
   login,
   googleLogin,
   registerBulk,
-  creatUserName
+  creatUserName,
 };
