@@ -18,6 +18,11 @@ const userSchema = new mongoose.Schema(
     ],
     followers: [{ type: ObjectId, ref: "User" }],
     following: [{ type: ObjectId, ref: "User" }],
+    role: {
+      type: String,
+      enum: ["ADMIN", "TEST", "USER"],
+      default: "USER",
+    },
   },
   { timestamps: true }
 );

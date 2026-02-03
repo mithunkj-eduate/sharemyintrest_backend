@@ -36,7 +36,7 @@ const firstNames = [
   "Uday",
   "Varun",
   "Wasim",
-  "Xavier",
+  "avier",
   "Yash",
   "Zubin",
   "Nagaraj",
@@ -114,6 +114,7 @@ const registerBulk = async (req, res) => {
         email: u.email,
         mobileNumber: u.mobileNumber,
         password: hashPassword,
+        role: "TEST"
       });
     }
 
@@ -132,3 +133,8 @@ const registerBulk = async (req, res) => {
 };
 
 registerBulk();
+
+
+
+
+
