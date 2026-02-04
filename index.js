@@ -4,6 +4,7 @@ const cors = require("cors");
 const errorHandler = require("./middleware/errorHandler");
 const path = require("path");
 const requiredLogin = require("./middleware/requiredLogin");
+const cookieParser = require("cookie-parser");
 
 const http = require("http");
 const { Server } = require("socket.io");
@@ -39,6 +40,7 @@ app.options("*", cors(corsOptions));
 app.use(express.urlencoded({ extended: true }));
 
 app.use(express.json());
+app.use(cookieParser());
 
 const server = http.createServer(app);
 
@@ -61,6 +63,7 @@ const io = new Server(server, {
 global.onlineUsers = new Map();
 
 require("./sockets/chatSocket")(io);
+
 
 // ✅ STATIC FIRST
 app.use("/api/public", express.static(path.join(__dirname, "public")));

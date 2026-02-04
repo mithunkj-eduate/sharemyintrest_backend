@@ -9,6 +9,7 @@ const {
   registerSchema,
   bulkRegisterSchema,
 } = require("../helpers/joiValidatior");
+const Token = require("../model/tokenModel");
 
 require("dotenv").config();
 
@@ -88,19 +89,108 @@ const login = expressAsyncHandler(async (req, res) => {
     const user = await User.findOne({ email: req.body.email });
 
     if (user && bcrypt.compareSync(req.body.password, user.password)) {
-      const token = jwt.sign({ userId: user._id }, refresh);
-      const { _id, userName, email, Photo } = user;
+      const token = accessToken(user);
+      const refreashToken = generateRefreshToken(user);
 
-      res.json({
-        user: { _id, userName, email, Photo },
-        token: token,
+      const reftoken = new Token({
+        userId: user._id,
+        token: refreashToken,
       });
+      const savedToken = await reftoken.save();
+
+      // const token1 = jwt.sign({ userId: user._id }, refresh);
+      const { _id, userName, email, Photo, role } = user;
+
+      res
+        .cookie("jwt", refreashToken, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production" ? true : false,
+          sameSite: process.env.NODE_ENV === "production" ? "none" : false,
+          maxAge: Number(process.env.COOKIE_EXPIRY),
+        })
+        .json({
+          user: { _id, userName, email, Photo, role },
+          token: token,
+        });
     } else {
       res.status(404).send({ message: "user not found" });
     }
   } catch (error) {
     res.status(400).send({ message: "db error", error: error });
   }
+});
+
+// generate refresh token
+function generateRefreshToken(user) {
+  refreashToken = jwt.sign(
+    {
+      userId: user._id,
+      role: user.role,
+    },
+    process.env.REFRESH_TOKEN_SECKRET,
+    { expiresIn: process.env.REFRESH_TOKEN_EXPIRY }
+  );
+
+  return refreashToken;
+}
+
+//generate accessToken
+function accessToken(user) {
+  return jwt.sign(
+    {
+      userId: user._id,
+      role: user.role,
+    },
+    process.env.ACCESS_TOKEN_SECKRET,
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
+  );
+}
+
+//getToken  GET  /api/auth/token
+const getAccessToken = expressAsyncHandler(async (req, res) => {
+  const cookies = req.cookies;
+  console.log(cookies, "cookies");
+  if (!cookies?.jwt) res.sendStatus(401);
+  const refreashToken = cookies.jwt;
+  const foundUser = await Token.findOne({ token: refreashToken });
+  console.log(foundUser, "foundUser");
+  
+  if (!foundUser) {
+    res.status(401).send({
+      status: false,
+      message: "user must be logged out.. please login again",
+    });
+  }
+
+  //verify refreash token and produce access token
+  jwt.verify(
+    refreashToken,
+    process.env.REFRESH_TOKEN_SECKRET,
+    (err, payload) => {
+      if (err) {
+        res.clearCookie("jwt", {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "PRODUCTION" ? true : false,
+          sameSite: process.env.NODE_ENV === "PRODUCTION" ? "none" : false,
+          maxAge: eval(process.env.COOKIE_EXPIRY),
+        });
+        return res.json({
+          status: false,
+          message: "Unauthorized! refresh token exired",
+        });
+      }
+
+      const accessToken = jwt.sign(
+        {
+          userId: payload.userId,
+          role: payload.role,
+        },
+        process.env.ACCESS_TOKEN_SECKRET,
+        { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
+      );
+      res.json({ status: true, data: accessToken });
+    }
+  );
 });
 
 //googleLogin
@@ -257,4 +347,5 @@ module.exports = {
   googleLogin,
   registerBulk,
   creatUserName,
+  getAccessToken,
 };
