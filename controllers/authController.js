@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const User = require("../model/userModel");
 const Post = require("../model/post");
@@ -11,9 +13,9 @@ const {
 } = require("../helpers/joiValidatior");
 const Token = require("../model/tokenModel");
 
-require("dotenv").config();
-
 const refresh = process.env.JWT_SECRET;
+
+const saltNum = 12;
 
 //unique user name create
 const creatUserName = (data) => {
@@ -64,7 +66,7 @@ const register = expressAsyncHandler(async (req, res) => {
     throw new Error("user already present");
   }
 
-  const hashPassword = await bcrypt.hash(req.body.password, 12);
+  const hashPassword = await bcrypt.hash(req.body.password, saltNum);
 
   const newUser = await User.create({
     user: req.body.user.trim(),
@@ -128,7 +130,7 @@ function generateRefreshToken(user) {
       role: user.role,
     },
     process.env.REFRESH_TOKEN_SECKRET,
-    { expiresIn: process.env.REFRESH_TOKEN_EXPIRY }
+    { expiresIn: process.env.REFRESH_TOKEN_EXPIRY },
   );
 
   return refreashToken;
@@ -142,7 +144,7 @@ function accessToken(user) {
       role: user.role,
     },
     process.env.ACCESS_TOKEN_SECKRET,
-    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRY },
   );
 }
 
@@ -154,7 +156,7 @@ const getAccessToken = expressAsyncHandler(async (req, res) => {
   const refreashToken = cookies.jwt;
   const foundUser = await Token.findOne({ token: refreashToken });
   console.log(foundUser, "foundUser");
-  
+
   if (!foundUser) {
     res.status(401).send({
       status: false,
@@ -186,10 +188,10 @@ const getAccessToken = expressAsyncHandler(async (req, res) => {
           role: payload.role,
         },
         process.env.ACCESS_TOKEN_SECKRET,
-        { expiresIn: process.env.ACCESS_TOKEN_EXPIRY }
+        { expiresIn: process.env.ACCESS_TOKEN_EXPIRY },
       );
       res.json({ status: true, data: accessToken });
-    }
+    },
   );
 });
 
@@ -208,7 +210,7 @@ const googleLogin = expressAsyncHandler(async (req, res) => {
       });
     } else {
       const password = req.body.email + req.body.clientId;
-      const hashPassword = await bcrypt.hash(password, 12);
+      const hashPassword = await bcrypt.hash(password, saltNum);
       const newUser = await User.create({
         name: req.body.name,
         userName: creatUserName(req.body.userName),
@@ -227,6 +229,77 @@ const googleLogin = expressAsyncHandler(async (req, res) => {
     }
   }
 });
+
+// sharemyinterestLogin
+const sharemyinterestLogin = expressAsyncHandler(async (req, res) => {
+  const { user, userName, clientId, mobileNumber } = req.body;
+
+  const newEmail = `${mobileNumber}@gmail.com`;
+  const userData = await User.findOne({ email: newEmail });
+
+  if (userData) {
+    const data = await sharemyinterestFun(userData);
+
+    // const token1 = jwt.sign({ userId: user._id }, refresh);
+    const { _id, userName, email, Photo, role } = user;
+
+    res
+      .cookie("jwt", data.refreashToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production" ? true : false,
+        sameSite: process.env.NODE_ENV === "production" ? "none" : false,
+        maxAge: Number(process.env.COOKIE_EXPIRY),
+      })
+      .json({
+        user: { _id, userName, email, Photo, role },
+        token: data.token,
+      });
+  } else {
+    // const password = mobileNumber + clientId;
+    const password = mobileNumber + user;
+
+    const hashPassword = await bcrypt.hash(password, saltNum);
+
+    const newUser = await User.create({
+      user: user.trim(),
+      userName: creatUserName(user),
+      password: hashPassword,
+      email: newEmail,
+      mobileNumber: mobileNumber,
+    });
+
+    const data = await sharemyinterestFun(newUser);
+
+    // const token1 = jwt.sign({ userId: user._id }, refresh);
+    const { _id, userName, email, Photo, role } = data;
+
+    res
+      .cookie("jwt", data.refreashToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production" ? true : false,
+        sameSite: process.env.NODE_ENV === "production" ? "none" : false,
+        maxAge: Number(process.env.COOKIE_EXPIRY),
+      })
+      .json({
+        user: { _id, userName, email, Photo, role },
+        token: data.token,
+      });
+  }
+});
+
+// sharemyinterestLogin  function
+const sharemyinterestFun = async (user) => {
+  const token = accessToken(user);
+  const refreashToken = generateRefreshToken(user);
+
+  const reftoken = new Token({
+    userId: user._id,
+    token: refreashToken,
+  });
+  const savedToken = await reftoken.save();
+
+  return { refreashToken, token };
+};
 
 // const creatUserName = (name) => name.toLowerCase().replace(/\s+/g, "");
 
@@ -318,7 +391,7 @@ const registerBulk = expressAsyncHandler(async (req, res) => {
       continue;
     }
 
-    const hashPassword = await bcrypt.hash(u.password, 12);
+    const hashPassword = await bcrypt.hash(u.password, saltNum);
 
     preparedUsers.push({
       user: u.user?.trim(),
@@ -348,4 +421,5 @@ module.exports = {
   registerBulk,
   creatUserName,
   getAccessToken,
+  sharemyinterestLogin,
 };

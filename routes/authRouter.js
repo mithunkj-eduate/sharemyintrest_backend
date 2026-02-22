@@ -6,7 +6,8 @@ const {
   login,
   googleLogin,
   registerBulk,
-  getAccessToken
+  getAccessToken,
+  sharemyinterestLogin,
 } = require("../controllers/authController");
 
 router.route("/register").post(register);
@@ -14,6 +15,6 @@ router.route("/login").post(login);
 router.route("/googleLogin").post(googleLogin);
 router.route("/bulkRegister").post(registerBulk);
 router.route("/token").get(getAccessToken);
-
+router.route("/laginWithShareMyInterest").post(sharemyinterestLogin);
 
 module.exports = router;

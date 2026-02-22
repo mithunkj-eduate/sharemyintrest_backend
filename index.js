@@ -17,21 +17,21 @@ console.log(process.env.PORT, process.env.DB_URL);
 // DB
 connectDB();
 
-const corsOptions = {
-  origin: "https://snap.shareurinterest.com",
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-  credentials: true,
-  exposedHeaders: ["set-cookie"],
-};
-
 // const corsOptions = {
-//   origin: "http://localhost:3000",
+//   origin: "https://snap.shareurinterest.com",
 //   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
 //   allowedHeaders: ["Content-Type", "Authorization"],
 //   credentials: true,
 //   exposedHeaders: ["set-cookie"],
 // };
+
+const corsOptions = {
+  origin: "http://localhost:3001",
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+  credentials: true,
+  exposedHeaders: ["set-cookie"],
+};
 
 // CORS (this part is FINE ✅)
 app.use(cors(corsOptions));
@@ -44,19 +44,19 @@ app.use(cookieParser());
 
 const server = http.createServer(app);
 
-const io = new Server(server, {
-  cors: {
-    origin: "https://snap.shareurinterest.com",
-    methods: ["GET", "POST"],
-  },
-});
-
 // const io = new Server(server, {
 //   cors: {
-//     origin: "http://localhost:3000", // replace with your frontend URL in production
+//     origin: "https://snap.shareurinterest.com",
 //     methods: ["GET", "POST"],
 //   },
 // });
+
+const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:3001", // replace with your frontend URL in production
+    methods: ["GET", "POST"],
+  },
+});
 
 // origin: "http://localhost:3000", // replace with your frontend URL in production
 
@@ -67,6 +67,8 @@ require("./sockets/chatSocket")(io);
 
 // ✅ STATIC FIRST
 app.use("/api/public", express.static(path.join(__dirname, "public")));
+
+
 
 const authRouter = require("./routes/authRouter");
 const postRouter = require("./routes/createPost");
