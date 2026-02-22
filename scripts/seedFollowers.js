@@ -1,8 +1,8 @@
 // node scripts/seedFollowers
+require("dotenv").config();
 
 const mongoose = require("mongoose");
 const User = require("../model/userModel");
-require("dotenv").config();
 
 const MONGO_URL = process.env.DB_URL;
 

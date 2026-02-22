@@ -1,4 +1,3 @@
-const express = require("express");
 const connectDB = require("./db/conn");
 const cors = require("cors");
 const errorHandler = require("./middleware/errorHandler");
@@ -10,6 +9,8 @@ const http = require("http");
 const { Server } = require("socket.io");
 
 require("dotenv").config();
+const express = require("express");
+
 
 const app = express();
 const port = process.env.PORT;
@@ -17,21 +18,21 @@ console.log(process.env.PORT, process.env.DB_URL);
 // DB
 connectDB();
 
-// const corsOptions = {
-//   origin: "https://snap.shareurinterest.com",
-//   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-//   allowedHeaders: ["Content-Type", "Authorization"],
-//   credentials: true,
-//   exposedHeaders: ["set-cookie"],
-// };
-
 const corsOptions = {
-  origin: "http://localhost:3001",
+  origin: "https://snap.shareurinterest.com",
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
   exposedHeaders: ["set-cookie"],
 };
+
+// const corsOptions = {
+//   origin: "http://localhost:3000",
+//   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//   allowedHeaders: ["Content-Type", "Authorization"],
+//   credentials: true,
+//   exposedHeaders: ["set-cookie"],
+// };
 
 // CORS (this part is FINE ✅)
 app.use(cors(corsOptions));
@@ -44,19 +45,19 @@ app.use(cookieParser());
 
 const server = http.createServer(app);
 
-// const io = new Server(server, {
-//   cors: {
-//     origin: "https://snap.shareurinterest.com",
-//     methods: ["GET", "POST"],
-//   },
-// });
-
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3001", // replace with your frontend URL in production
+    origin: "https://snap.shareurinterest.com",
     methods: ["GET", "POST"],
   },
 });
+
+// const io = new Server(server, {
+//   cors: {
+//     origin: "http://localhost:3000", // replace with your frontend URL in production
+//     methods: ["GET", "POST"],
+//   },
+// });
 
 // origin: "http://localhost:3000", // replace with your frontend URL in production
 

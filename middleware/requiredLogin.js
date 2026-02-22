@@ -1,7 +1,8 @@
+require("dotenv").config();
+
 const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const userModel = require("../model/userModel");
-require("dotenv").config();
 
 const ACCESS_TOKEN_SECKRET = process.env.ACCESS_TOKEN_SECKRET;
 
