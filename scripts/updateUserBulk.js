@@ -1,6 +1,5 @@
 // screept run to create users
 //  node scripts/updateUserBulk.js
-require("dotenv").config();
 
 const mongoose = require("mongoose");
 const { bulkRegisterSchema } = require("../helpers/joiValidatior");
@@ -8,6 +7,7 @@ const User = require("../model/userModel");
 const bcrypt = require("bcrypt");
 const { creatUserName } = require("../controllers/authController");
 
+require("dotenv").config();
 
 // 🔥 change DB
 const MONGO_URL = process.env.DB_URL;

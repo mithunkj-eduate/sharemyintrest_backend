@@ -1,3 +1,4 @@
+const express = require("express");
 const connectDB = require("./db/conn");
 const cors = require("cors");
 const errorHandler = require("./middleware/errorHandler");
@@ -9,8 +10,6 @@ const http = require("http");
 const { Server } = require("socket.io");
 
 require("dotenv").config();
-const express = require("express");
-
 
 const app = express();
 const port = process.env.PORT;

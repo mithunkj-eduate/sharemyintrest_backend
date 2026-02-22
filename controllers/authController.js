@@ -172,8 +172,8 @@ const getAccessToken = expressAsyncHandler(async (req, res) => {
       if (err) {
         res.clearCookie("jwt", {
           httpOnly: true,
-          secure: process.env.NODE_ENV === "PRODUCTION" ? true : false,
-          sameSite: process.env.NODE_ENV === "PRODUCTION" ? "none" : false,
+          secure: process.env.NODE_ENV === "production" ? true : false,
+          sameSite: process.env.NODE_ENV === "production" ? "none" : false,
           maxAge: eval(process.env.COOKIE_EXPIRY),
         });
         return res.json({

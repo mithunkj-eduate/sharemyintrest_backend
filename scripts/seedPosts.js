@@ -1,10 +1,9 @@
 // screept run to create post
 // node scripts/seedPost
-require("dotenv").config();
-
 const mongoose = require("mongoose");
 const Post = require("../model/post");
 const User = require("../model/userModel");
+require("dotenv").config();
 
 const MONGO_URL = process.env.DB_URL;
 
