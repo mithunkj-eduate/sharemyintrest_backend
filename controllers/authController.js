@@ -1,4 +1,5 @@
-require("dotenv").config();
+// require("dotenv").config();
+require("dotenv").config({ path: "../.env" });
 
 const express = require("express");
 const User = require("../model/userModel");
@@ -12,6 +13,7 @@ const {
   bulkRegisterSchema,
 } = require("../helpers/joiValidatior");
 const Token = require("../model/tokenModel");
+const logger = require("../helpers/logger");
 
 const refresh = process.env.JWT_SECRET;
 
@@ -89,11 +91,19 @@ const login = expressAsyncHandler(async (req, res) => {
       return res.status(404).send({ message: "user not found" });
     }
     const user = await User.findOne({ email: req.body.email });
+      logger.error(`bcrypt ${bcrypt.compareSync(req.body.password, user.password)}`);
+      logger.error(user?.password);
+
 
     if (user && bcrypt.compareSync(req.body.password, user.password)) {
-      const token = accessToken(user);
-      const refreashToken = generateRefreshToken(user);
+      logger.error(`user`);
+      logger.error(user?.password);
 
+      const token = accessToken(user);
+      logger.error(`token ${token}`);
+
+      const refreashToken = generateRefreshToken(user);
+      logger.error(`refreashToken ${refreashToken}`);
       const reftoken = new Token({
         userId: user._id,
         token: refreashToken,
@@ -124,12 +134,16 @@ const login = expressAsyncHandler(async (req, res) => {
 
 // generate refresh token
 function generateRefreshToken(user) {
+  logger.error(
+    `REFRESH_TOKEN_SECRET ${process.env.REFRESH_TOKEN_SECRET} REFRESH_TOKEN_EXPIRY ${process.env.REFRESH_TOKEN_EXPIRY}`,
+  );
+
   refreashToken = jwt.sign(
     {
       userId: user._id,
       role: user.role,
     },
-    process.env.REFRESH_TOKEN_SECKRET,
+    process.env.REFRESH_TOKEN_SECRET,
     { expiresIn: process.env.REFRESH_TOKEN_EXPIRY },
   );
 
@@ -138,12 +152,16 @@ function generateRefreshToken(user) {
 
 //generate accessToken
 function accessToken(user) {
+  logger.error(
+    `ACCESS_TOKEN_SECRET ${process.env.ACCESS_TOKEN_SECRET} ACCESS_TOKEN_EXPIRY ${process.env.ACCESS_TOKEN_EXPIRY}`,
+  );
+
   return jwt.sign(
     {
       userId: user._id,
       role: user.role,
     },
-    process.env.ACCESS_TOKEN_SECKRET,
+    process.env.ACCESS_TOKEN_SECRET,
     { expiresIn: process.env.ACCESS_TOKEN_EXPIRY },
   );
 }
@@ -167,7 +185,7 @@ const getAccessToken = expressAsyncHandler(async (req, res) => {
   //verify refreash token and produce access token
   jwt.verify(
     refreashToken,
-    process.env.REFRESH_TOKEN_SECKRET,
+    process.env.REFRESH_TOKEN_SECRET,
     (err, payload) => {
       if (err) {
         res.clearCookie("jwt", {
@@ -187,7 +205,7 @@ const getAccessToken = expressAsyncHandler(async (req, res) => {
           userId: payload.userId,
           role: payload.role,
         },
-        process.env.ACCESS_TOKEN_SECKRET,
+        process.env.ACCESS_TOKEN_SECRET,
         { expiresIn: process.env.ACCESS_TOKEN_EXPIRY },
       );
       res.json({ status: true, data: accessToken });

@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const userModel = require("../model/userModel");
 require("dotenv").config();
 
-const ACCESS_TOKEN_SECKRET = process.env.ACCESS_TOKEN_SECKRET;
+const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 
 const requiredLogin = async (req, res, next) => {
   const { authorization } = req.headers;
@@ -15,7 +15,7 @@ console.log(authorization,"authorization")
   try {
     const token = authorization.replace("Bearer ", "");
 
-    const payload = jwt.verify(token, ACCESS_TOKEN_SECKRET);
+    const payload = jwt.verify(token, ACCESS_TOKEN_SECRET);
 console.log(payload,"payload")
     const user = await userModel.findById(payload.userId);
 

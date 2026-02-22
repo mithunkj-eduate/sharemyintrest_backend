@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 const express = require("express");
 const connectDB = require("./db/conn");
 const cors = require("cors");
@@ -9,7 +11,6 @@ const cookieParser = require("cookie-parser");
 const http = require("http");
 const { Server } = require("socket.io");
 
-require("dotenv").config();
 
 const app = express();
 const port = process.env.PORT;
@@ -18,7 +19,11 @@ console.log(process.env.PORT, process.env.DB_URL);
 connectDB();
 
 const corsOptions = {
-  origin: "https://snap.shareurinterest.com",
+  origin: [
+    "https://snap.shareurinterest.com",
+    "https://www.snap.shareurinterest.com",
+    "http://localhost:3000",
+  ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
@@ -46,7 +51,11 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: "https://snap.shareurinterest.com",
+    origin: [
+      "https://snap.shareurinterest.com",
+      "https://www.snap.shareurinterest.com",
+      "http://localhost:3000",
+    ],
     methods: ["GET", "POST"],
   },
 });
@@ -64,11 +73,25 @@ global.onlineUsers = new Map();
 
 require("./sockets/chatSocket")(io);
 
-
 // ✅ STATIC FIRST
 app.use("/api/public", express.static(path.join(__dirname, "public")));
 
+app.get("/public/:filename", (req, res) => {
+  const { filename } = req.params;
 
+  const imagePath = path.join(process.cwd(), "public", filename);
+  const placeholderPath = path.join(process.cwd(), "public", "placeholder.png");
+
+  console.log("Requested:", imagePath);
+
+  // Check if file exists
+  if (fs.existsSync(imagePath)) {
+    return res.sendFile(imagePath);
+  } 
+
+  console.log("Image not found. Sending placeholder.");
+  return res.sendFile(placeholderPath);
+});
 
 const authRouter = require("./routes/authRouter");
 const postRouter = require("./routes/createPost");
