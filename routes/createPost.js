@@ -13,13 +13,21 @@ const {
   deletePost,
   createStory,
   getPost,
+  createNewPostS3,
 } = require("../controllers/createPost");
 const requiredLogin = require("../middleware/requiredLogin");
+const { uploadToS3 } = require("../helpers/multerS3");
 
 router.route("/createpost").post(requiredLogin, createPost);
+// upload image local backend
+// router
+//   .route("/createNewPost")
+//   .post(requiredLogin, upload.single("photo"), createNewPost);
+
+//upload image s3
 router
   .route("/createNewPost")
-  .post(requiredLogin, upload.single("photo"), createNewPost);
+  .post(requiredLogin, uploadToS3.single("photo"), createNewPostS3);
 router.route("/allposts").get(requiredLogin, allposts);
 router.route("/mypost").get(requiredLogin, mypost);
 router.route("/:id").get(requiredLogin, getPost);

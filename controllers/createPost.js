@@ -67,6 +67,34 @@ const createNewPost = expressAsyncHandler(async (req, res) => {
   res.json({ title: "Post created", data: post });
 });
 
+// store s3 images POST METHOD
+const createNewPostS3 = expressAsyncHandler(async (req, res) => {
+  if (!req.file) {
+    res.status(400);
+    throw new Error("Media file is required");
+  }
+
+  const isVideo = req.file.mimetype.startsWith("video");
+
+  const post = new Post({
+    body: req.body.title,
+    photo: req.file.location, // S3 URL
+    mediaType: isVideo ? "video" : "image",
+    postedBy: req.user,
+    location: {
+      type: "Point",
+      coordinates: [12.907637572103615, 77.61350705305202],
+    },
+  });
+
+  await post.save();
+
+  res.json({
+    message: "Post created",
+    data: post,
+  });
+});
+
 //get allpost
 const allposts = expressAsyncHandler(async (req, res) => {
   let limit = req.query.limit;
@@ -238,4 +266,5 @@ module.exports = {
   commentPost,
   deletePost,
   getPost,
+  createNewPostS3
 };

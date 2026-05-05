@@ -1,8 +1,6 @@
 const mongoose = require("mongoose");
 const { ObjectId } = mongoose.Schema.Types;
 
-
-
 const pointSchema = new mongoose.Schema({
   type: {
     type: String,
@@ -20,6 +18,7 @@ const postSchema = new mongoose.Schema(
     body: { type: String },
     photo: { type: String, required: true },
     likes: [{ type: ObjectId, ref: "User" }],
+    mediaType: { type: String },
     comments: [
       {
         comment: { type: String },
@@ -35,7 +34,7 @@ const postSchema = new mongoose.Schema(
     },
     // expirationTime: { type: Date },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // postSchema.pre("deleteOne", { document: true }, async function (next) {
@@ -50,10 +49,9 @@ const postSchema = new mongoose.Schema(
 //   next();
 // });
 
-
 //create 2dsphere indexing
 postSchema.index({ location: "2dsphere" });
 
-postSchema.index({ createdAt: -1 })
+postSchema.index({ createdAt: -1 });
 
 module.exports = mongoose.model("Post", postSchema);
