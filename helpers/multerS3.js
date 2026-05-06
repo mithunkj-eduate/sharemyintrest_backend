@@ -1,3 +1,4 @@
+import 'dotenv/config'; // Loads .env variables immediately
 import multer from "multer";
 import multerS3 from "multer-s3";
 import { s3 } from "./s3.js";
@@ -16,16 +17,18 @@ const allowedMimeTypes = [
   "video/x-matroska", // .mkv
 ];
 
+const bucketName = process.env.AWS_BUCKET_NAME ?? "";
+
 export const uploadToS3 = multer({
   storage: multerS3({
     s3: s3,
-    bucket: process.env.S3_BUCKET_NAME,
+    bucket: bucketName,
     contentType: multerS3.AUTO_CONTENT_TYPE,
-    acl: "public-read", // ⚠️ remove if using private bucket
+    // acl: "public-read", // ⚠️ remove if using private bucket
 
     key: function (req, file, cb) {
       const type = file.mimetype.startsWith("video") ? "videos" : "images";
-      const fileName = `posts/${req.user?._id}/${type}/${Date.now()}-${file.originalname}`;
+      const fileName = `snap_shareurinterest/posts/${req.user?._id}/${type}/${Date.now()}-${file.originalname}`;
       cb(null, fileName);
     },
   }),
