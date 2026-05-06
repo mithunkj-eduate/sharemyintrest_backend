@@ -69,16 +69,23 @@ const createNewPost = expressAsyncHandler(async (req, res) => {
 
 // store s3 images POST METHOD
 const createNewPostS3 = expressAsyncHandler(async (req, res) => {
+  const bucketName = process.env.AWS_BUCKET_NAME ?? "";
   if (!req.file) {
     res.status(400);
     throw new Error("Media file is required");
   }
-
+ 
   const isVideo = req.file.mimetype.startsWith("video");
+
+  const reqUrl = req.file.location.split(
+    "https://snap.shareurinterest.com.s3.ap-south-1.amazonaws.com",
+  );
+  const url = `https://s3.ap-south-1.amazonaws.com/${bucketName}${reqUrl[1]}`;
+
 
   const post = new Post({
     body: req.body.title,
-    photo: req.file.location, // S3 URL
+    photo: url, // S3 URL
     mediaType: isVideo ? "video" : "image",
     postedBy: req.user,
     location: {
@@ -108,14 +115,13 @@ const allposts = expressAsyncHandler(async (req, res) => {
     .limit(parseInt(limit))
     .sort("-createdAt");
 
-
-    // const allPost = await Post.find()
-    // .sort({ createdAt: -1 })
-    // .skip(Number(skip))
-    // .limit(Number(limit))
-    // .populate("postedBy", "_id userName Photo followers following")
-    // .populate("comments.postedBy", "_id userName user Photo createdAt")
-    // .lean();
+  // const allPost = await Post.find()
+  // .sort({ createdAt: -1 })
+  // .skip(Number(skip))
+  // .limit(Number(limit))
+  // .populate("postedBy", "_id userName Photo followers following")
+  // .populate("comments.postedBy", "_id userName user Photo createdAt")
+  // .lean();
   // const highLike = await Post.aggregate([
   //   { $unwind: "$likes" },
   //   { $sortByCount: "$likes" },
@@ -165,7 +171,7 @@ const likepost = expressAsyncHandler(async (req, res) => {
     {
       $push: { likes: req.user._id },
     },
-    { new: true }
+    { new: true },
   )
     .populate("postedBy", "_id userName Photo user")
     .populate("comments.postedBy", "_id userName Photo user createdAt");
@@ -184,7 +190,7 @@ const unlikepost = expressAsyncHandler(async (req, res) => {
     {
       $pull: { likes: req.user._id },
     },
-    { new: true }
+    { new: true },
   )
     .populate("postedBy", "_id userName Photo user")
     .populate("comments.postedBy", "_id userName Photo user createdAt");
@@ -212,7 +218,7 @@ const commentPost = expressAsyncHandler(async (req, res) => {
     {
       $push: { comments: comment },
     },
-    { new: true }
+    { new: true },
   )
     .populate("comments.postedBy", "_id userName Photo user createdAt")
     .populate("postedBy", "_id userName Photo user");
@@ -224,7 +230,7 @@ const commentPost = expressAsyncHandler(async (req, res) => {
 const deletePost = expressAsyncHandler(async (req, res) => {
   const deleteSinglePost = await Post.findById(req.params.postId).populate(
     "postedBy",
-    "_id"
+    "_id",
   );
 
   if (!deleteSinglePost) {
@@ -246,7 +252,7 @@ const deletePost = expressAsyncHandler(async (req, res) => {
 const getPost = expressAsyncHandler(async (req, res) => {
   const post = await Post.findById(req.params.id).populate(
     "postedBy",
-    "userName Photo"
+    "userName Photo",
   );
   if (post == null) {
     res.status(404);
@@ -266,5 +272,5 @@ module.exports = {
   commentPost,
   deletePost,
   getPost,
-  createNewPostS3
+  createNewPostS3,
 };
