@@ -22,7 +22,7 @@ const bucketName = process.env.AWS_BUCKET_NAME ?? "";
 const baseKey = `snap_shareurinterest/posts`;
 // https://s3.ap-south-1.amazonaws.com/snap.shareurinterest.com/snap_shareurinterest/posts/697a53cb614db6fe4da4c05b/images/1778060368785-anime.png
 
-export const uploadToS3 = multer({
+export const uploadToS3 = (folderName) => multer({
   storage: multerS3({
     s3: s3,
     bucket: bucketName,
@@ -31,7 +31,9 @@ export const uploadToS3 = multer({
 
     key: function (req, file, cb) {
       const type = file.mimetype.startsWith("video") ? "videos" : "images";
-      const fileName = `${baseKey}/${req.user?._id}/${type}/${Date.now()}-${file.originalname}`;
+      // const fileName = `${baseKey}/${req.user?._id}/${type}/${Date.now()}-${file.originalname}`;
+      const fileName = `snap_shareurinterest/${folderName}/${req.user?._id}/${type}/${Date.now()}-${file.originalname}`;
+
       cb(null, fileName);
     },
   }),
@@ -47,6 +49,6 @@ export const uploadToS3 = multer({
 
   // ✅ Size limits (VERY important for videos)
   limits: {
-    fileSize: 2 * 1024 * 1024, // 2MB (adjust as needed)
+    fileSize: 20 * 1024 * 1024, // 20MB (adjust as needed)
   },
 });

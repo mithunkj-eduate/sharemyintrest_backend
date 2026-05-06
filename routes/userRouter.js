@@ -13,8 +13,13 @@ const {
   getUsers,
   createStory,
   deleteStory,
+  uploadProfilePicS3,
 } = require("../controllers/userController");
 const requiredLogin = require("../middleware/requiredLogin");
+const { uploadToS3 } = require("../helpers/multerS3");
+
+const profilePicUpload = uploadToS3("profile_pic");
+
 
 router.route("/followingpost").get(requiredLogin, followingpost);
 router.route("/followList").get(requiredLogin, followList);
@@ -25,10 +30,15 @@ router
   .route("/createStory")
   .put(requiredLogin, upload.single("photo"), createStory); // local store image
 router.route("/deleteStory").put(requiredLogin, deleteStory);
-// router.route("/uploadProfilePic").put(requiredLogin, uploadProfilePic);
+// // router.route("/uploadProfilePic").put(requiredLogin, uploadProfilePic);
+// router
+//   .route("/uploadProfilePic")
+//   .put(requiredLogin, upload.single("photo"), uploadProfilePic); // local store image
+
+
 router
   .route("/uploadProfilePic")
-  .put(requiredLogin, upload.single("photo"), uploadProfilePic); // local store image
+  .put(requiredLogin, profilePicUpload.single("photo"), uploadProfilePicS3); // S3 store image
 
 router.route("/follow").put(requiredLogin, follow);
 router.route("/unfollow").put(requiredLogin, unfollow);

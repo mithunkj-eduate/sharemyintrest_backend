@@ -66,6 +66,8 @@ const createMessage = expressAsyncHandler(async (req, res) => {
   res.json({ title: "message created", data: message });
 });
 
+
+// store in s3
 const createMessageS3 = expressAsyncHandler(async (req, res) => {
   const { receivedBy, title, link } = req.body;
 
@@ -79,7 +81,11 @@ const createMessageS3 = expressAsyncHandler(async (req, res) => {
   let mediaType = null;
 
   if (req.file) {
-    mediaUrl = req.file.location; // S3 URL
+    // mediaUrl = req.file.location; // S3 URL
+    const reqUrl = req.file.location.split(
+      "https://snap.shareurinterest.com.s3.ap-south-1.amazonaws.com",
+    );
+    mediaUrl = reqUrl[1];
     mediaType = req.file.mimetype.startsWith("video") ? "video" : "image";
   }
 
@@ -107,7 +113,7 @@ const createMessageS3 = expressAsyncHandler(async (req, res) => {
       receivedBy: userId,
       link,
       photo: mediaUrl,
-    //  messageType: mediaType,
+      //  messageType: mediaType,
     }));
 
     message = await Message.insertMany(messagesList);
@@ -173,4 +179,4 @@ const downloadFile = expressAsyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { createMessage, getMessages, downloadFile,createMessageS3 };
+module.exports = { createMessage, getMessages, downloadFile, createMessageS3 };

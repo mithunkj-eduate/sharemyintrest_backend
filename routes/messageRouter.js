@@ -11,6 +11,9 @@ const {
 const requiredLogin = require("../middleware/requiredLogin");
 const { uploadToS3 } = require("../helpers/multerS3");
 
+const messageUpload = uploadToS3("messages");
+
+
 //upload local
 // router
 //   .route("/message")
@@ -19,7 +22,7 @@ const { uploadToS3 } = require("../helpers/multerS3");
 //upload s3
 router
   .route("/message")
-  .post(requiredLogin, uploadToS3.single("photo"), createMessageS3);
+  .post(requiredLogin, messageUpload.single("photo"), createMessageS3);
 
 router.route("/message?").get(requiredLogin, getMessages);
 router.route("/downloadFile/:id").get(downloadFile);
