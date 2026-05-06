@@ -36,7 +36,7 @@ router.route("/share").post(requiredLogin, shareMessage);
 router.route("/message/:id").delete(requiredLogin, deleteMessage);
 router
   .route("/uploads")
-  .post(requiredLogin, upload.single("file"), uploadFiles);
+  .post(requiredLogin, upload.single("file"), uploadFiles); // local store images
 router.route("/downloadFile/:id").get(requiredLogin, downloadChatFile);
 
 module.exports = router;
