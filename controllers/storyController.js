@@ -54,7 +54,7 @@ const createNewStoryS3 = expressAsyncHandler(async (req, res) => {
 
   console.log(req.file,"req.file")
   let story;
-  if (!req.file?.filename) {
+  if (!req.file?.location) {
     story = new Story({
       body: req.body.title,
       postedBy: req.user,
