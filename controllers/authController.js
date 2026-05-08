@@ -129,9 +129,11 @@ const login = expressAsyncHandler(async (req, res) => {
         });
     } else {
       res.status(404).send({ message: "email or password incorrect" });
+      return
     }
   } catch (error) {
     res.status(400).send({ message: "db error", error: error });
+    return
   }
 });
 
