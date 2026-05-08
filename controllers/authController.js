@@ -91,6 +91,9 @@ const login = expressAsyncHandler(async (req, res) => {
       return res.status(404).send({ message: "user not found" });
     }
     const user = await User.findOne({ email: req.body.email });
+    if(!user){
+      res.status(404).send({ message: "user not found" });
+    }
       logger.error(`bcrypt ${bcrypt.compareSync(req.body.password, user.password)}`);
       logger.error(user?.password);
 
@@ -125,7 +128,7 @@ const login = expressAsyncHandler(async (req, res) => {
           token: token,
         });
     } else {
-      res.status(404).send({ message: "user not found" });
+      res.status(404).send({ message: "email or password incorrect" });
     }
   } catch (error) {
     res.status(400).send({ message: "db error", error: error });
