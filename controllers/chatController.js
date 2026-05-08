@@ -206,7 +206,7 @@ const shareMessage = expressAsyncHandler(async (req, res) => {
 // GET
 // download image
 //  /api/chat/downloadFile/${messageId}
-const downloadChatFile = expressAsyncHandler(async (req, res) => {
+const downloadChatFileLocal = expressAsyncHandler(async (req, res) => {
   const message = await Message.findById(req.params.id);
 
   if (!message) {
@@ -234,6 +234,54 @@ const downloadChatFile = expressAsyncHandler(async (req, res) => {
     });
   } else {
     res.status(404).send("File not found");
+  }
+});
+
+// downloD from s3
+const { GetObjectCommand } = require("@aws-sdk/client-s3");
+const { s3 } = require("../helpers/s3");
+
+
+const downloadChatFile = expressAsyncHandler(async (req, res) => {
+  const message = await Message.findById(req.params.id);
+
+  if (!message) {
+    res.status(404);
+    throw new Error("Message not found");
+  }
+
+  if (!message.media) {
+    return res.status(404).send("File not found");
+  }
+
+  try {
+    // media stored like:
+    // /snap_shareurinterest/posts/userId/images/file.jpg
+    const key = message.media.startsWith("/")
+      ? message.media.slice(1)
+      : message.media;
+
+    const command = new GetObjectCommand({
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: key,
+    });
+
+    const response = await s3.send(command);
+
+    res.setHeader(
+      "Content-Type",
+      response.ContentType || "application/octet-stream",
+    );
+
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename="${key.split("/").pop()}"`,
+    );
+
+    response.Body.pipe(res);
+  } catch (error) {
+    console.log(error);
+    res.status(500).send("Download failed");
   }
 });
 
