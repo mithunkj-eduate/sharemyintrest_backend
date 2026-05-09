@@ -7,7 +7,7 @@ const ACCESS_TOKEN_SECRET = process.env.ACCESS_TOKEN_SECRET;
 
 const requiredLogin = async (req, res, next) => {
   const { authorization } = req.headers;
-console.log(authorization,"authorization")
+// console.log(authorization,"authorization")
   if (!authorization) {
     return res.status(401).json({ message: "No token provided" });
   }
@@ -16,7 +16,7 @@ console.log(authorization,"authorization")
     const token = authorization.replace("Bearer ", "");
 
     const payload = jwt.verify(token, ACCESS_TOKEN_SECRET);
-console.log(payload,"payload")
+// console.log(payload,"payload")
     const user = await userModel.findById(payload.userId);
 
     if (!user) {

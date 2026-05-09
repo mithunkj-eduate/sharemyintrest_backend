@@ -15,9 +15,9 @@ const {
   shareMessage,
   downloadChatFile,
   uploadFilesS3,
+  downloadApkFile,
 } = require("../controllers/chatController");
 const { uploadToS3 } = require("../helpers/multerS3");
-
 
 const messageUpload = uploadToS3("messages");
 
@@ -47,5 +47,6 @@ router
   .route("/uploads")
   .post(requiredLogin, messageUpload.single("file"), uploadFilesS3); // s3 store images
 router.route("/downloadFile/:id").get(requiredLogin, downloadChatFile);
+router.route("/downloadApk").get(downloadApkFile); // download apk file
 
 module.exports = router;
