@@ -82,7 +82,7 @@ const createNewPostS3Old = expressAsyncHandler(async (req, res) => {
   const isVideo = req.file.mimetype.startsWith("video");
 
   const reqUrl = req.file.location.split(
-    "https://snap.shareurinterest.com.s3.ap-south-1.amazonaws.com",
+    "https://snap.shareurinterest.com.s3.ap-south-1.amazonaws.com/",
   );
   // const url = `https://s3.ap-south-1.amazonaws.com/${bucketName}${reqUrl[1]}`;
   const url = `${reqUrl[1]}`;

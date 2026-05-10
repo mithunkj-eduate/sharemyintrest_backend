@@ -190,7 +190,7 @@ const uploadProfilePicS3 = expressAsyncHandler(async (req, res) => {
   }
 
   const reqUrl = req.file.location.split(
-    "https://snap.shareurinterest.com.s3.ap-south-1.amazonaws.com",
+    "https://snap.shareurinterest.com.s3.ap-south-1.amazonaws.com/",
   );
   // const url = `https://s3.ap-south-1.amazonaws.com/${bucketName}${reqUrl[1]}`;
   const url = `${reqUrl[1]}`;

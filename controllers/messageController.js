@@ -83,7 +83,7 @@ const createMessageS3 = expressAsyncHandler(async (req, res) => {
   if (req.file) {
     // mediaUrl = req.file.location; // S3 URL
     const reqUrl = req.file.location.split(
-      "https://snap.shareurinterest.com.s3.ap-south-1.amazonaws.com",
+      "https://snap.shareurinterest.com.s3.ap-south-1.amazonaws.com/",
     );
     mediaUrl = reqUrl[1];
     mediaType = req.file.mimetype.startsWith("video") ? "video" : "image";
