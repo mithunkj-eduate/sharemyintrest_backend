@@ -207,9 +207,11 @@ const uploadProfilePicS3 = expressAsyncHandler(async (req, res) => {
 
 //followlist get all following list
 const followList = expressAsyncHandler(async (req, res) => {
-  const follower = await User.find(req.user._id)
-    .populate("following", "userName Photo user")
-    .select("userName");
+  const follower = await User.find(req.user._id).populate({
+    path: "following",
+    select: "userName Photo user",
+    options: { limit: 20 }, // This limits the sub-list to 10 items
+  });
 
   res.json({ title: "follow list", data: follower });
 });
