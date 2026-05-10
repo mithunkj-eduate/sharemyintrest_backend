@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
-const upload = require("../helpers/multer");
+// const upload = require("../helpers/multer");
+const upload = require("../middleware/multer");
 
 const {
   createPost,
@@ -16,9 +17,9 @@ const {
   createNewPostS3,
 } = require("../controllers/createPost");
 const requiredLogin = require("../middleware/requiredLogin");
-const { uploadToS3 } = require("../helpers/multerS3");
+// const { uploadToS3 } = require("../helpers/multerS3");
 
-const postUpload = uploadToS3("posts");
+// const postUpload = uploadToS3("posts");
 
 router.route("/createpost").post(requiredLogin, createPost);
 // upload image local backend
@@ -27,9 +28,16 @@ router.route("/createpost").post(requiredLogin, createPost);
 //   .post(requiredLogin, upload.single("photo"), createNewPost);
 
 //upload image s3
-router
-  .route("/createNewPost")
-  .post(requiredLogin, postUpload.single("photo"), createNewPostS3);
+// router
+//   .route("/createNewPost")
+//   .post(requiredLogin, postUpload.single("photo"), createNewPostS3);
+
+router.post(
+  "/createNewPost",
+  requiredLogin,
+  upload.single("photo"),
+  createNewPostS3,
+);
 router.route("/allposts").get(requiredLogin, allposts);
 router.route("/mypost").get(requiredLogin, mypost);
 router.route("/:id").get(requiredLogin, getPost);

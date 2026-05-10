@@ -22,7 +22,7 @@ const corsOptions = {
   origin: [
     "https://snap.shareurinterest.com",
     "https://www.snap.shareurinterest.com",
-    // "http://localhost:3000",
+    "http://localhost:3000",
   ],
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
