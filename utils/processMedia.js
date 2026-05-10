@@ -1,14 +1,7 @@
 const sharp = require("sharp");
-// // const ffmpeg = require("fluent-ffmpeg");
-// const ffmpegPath = require("ffmpeg-static");
-// const fs = require("fs");
-// const path = require("path");
+const path = require("path");
 const ffmpeg = require("fluent-ffmpeg");
 
-console.log("FFmpeg path:", ffmpeg._getFfmpegPath);
-ffmpeg.setFfmpegPath("/usr/bin/ffmpeg");
-
-// ffmpeg.setFfmpegPath(ffmpegPath);
 
 const processImage = async (fileBuffer) => {
   const svgWatermark = `
@@ -38,18 +31,21 @@ const processImage = async (fileBuffer) => {
 
 const processVideo = (inputPath, outputPath) => {
   return new Promise((resolve, reject) => {
+    const watermarkPath = path.join(__dirname, "../public/logo/watermark.png");
 
     ffmpeg(inputPath)
+      .input(watermarkPath)
       .setStartTime(0)
       .setDuration(15)
       .videoCodec("libx264")
       .outputOptions(["-crf 28", "-preset veryfast"])
-      .videoFilters(
-        "drawtext=text='ShareUrInterest':x=w-tw-20:y=h-th-20:fontsize=30:fontcolor=white@0.5",
-      )
-      .save(outputPath)
+      .complexFilter([
+        "[1:v]scale=20:-1[watermark]",
+        "[0:v][watermark]overlay=W-w-20:H-h-150",
+      ])
       .on("end", () => resolve(outputPath))
-      .on("error", reject);
+      .on("error", reject)
+      .save(outputPath);
   });
 };
 
