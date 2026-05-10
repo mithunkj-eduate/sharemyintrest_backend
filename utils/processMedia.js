@@ -1,6 +1,9 @@
 const sharp = require("sharp");
 const path = require("path");
 const ffmpeg = require("fluent-ffmpeg");
+const ffmpegPath = require("ffmpeg-static");
+
+ffmpeg.setFfmpegPath(ffmpegPath);
 
 
 const processImage = async (fileBuffer) => {

@@ -6,6 +6,8 @@ const { uploadToS3 } = require("../utils/S3Upload");
 const { processImage, processVideo } = require("../utils/processMedia");
 const path = require("path");
 const fs = require("fs");
+const logger = require("../helpers/logger");
+
 
 //create post
 const createPost = expressAsyncHandler(async (req, res) => {
@@ -333,6 +335,8 @@ const createNewPostS3 = async (req, res) => {
     });
   } catch (error) {
     console.log(error);
+      logger.error("upload error", error);
+    
     res.status(500).json({
       message: "Upload failed",
     });
