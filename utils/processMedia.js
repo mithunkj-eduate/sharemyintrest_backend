@@ -37,7 +37,7 @@ const processVideo = (inputPath, outputPath) => {
         "-bufsize 2M",
       ])
       .complexFilter([
-        "[1:v]scale=20:-1[watermark]",
+        "[1:v]scale=48:-1[watermark]",
         "[0:v][watermark]overlay=W-w-20:H-h-150",
       ])
       .on("end", () => resolve(outputPath))
