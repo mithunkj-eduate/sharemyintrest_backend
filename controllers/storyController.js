@@ -44,42 +44,6 @@ const createNewStory = expressAsyncHandler(async (req, res) => {
   res.json({ title: "Post created", data: story });
 });
 
-// store s3
-const createNewStoryS3Old = expressAsyncHandler(async (req, res) => {
-  // const basePath = `${req.protocol}://${req.get("host")}/public`;
-  const basePath = `/public`;
-
-  if (req.file == undefined) {
-    res.status(404);
-    throw new Error("required image");
-  }
-  const expirationTime = new Date(Date.now() + 60 * 60 * 24 * 1000); // 1 hour from now 60 * 60 * 1000
-
-  console.log(req.file, "req.file");
-  let story;
-  if (!req.file?.location) {
-    story = new Story({
-      body: req.body.title,
-      postedBy: req.user,
-      expirationTime: expirationTime,
-    });
-  } else {
-    const reqUrl = req.file.location.split(
-      "https://snap.shareurinterest.com.s3.ap-south-1.amazonaws.com/",
-    );
-    mediaUrl = reqUrl[1];
-    console.log(mediaUrl, "miadurl");
-    story = new Story({
-      body: req.body.title,
-      photo: mediaUrl ?? "",
-      postedBy: req.user,
-      expirationTime: expirationTime,
-    });
-  }
-  story.save();
-
-  res.json({ title: "Post created", data: story });
-});
 
 //get all followers stories
 const allStories = expressAsyncHandler(async (req, res) => {
