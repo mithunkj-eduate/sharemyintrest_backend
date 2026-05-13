@@ -22,6 +22,8 @@ const { uploadToS3 } = require("../helpers/multerS3");
 const messageUpload = uploadToS3("messages");
 
 const requiredLogin = require("../middleware/requiredLogin");
+const uploadCloudinary = require("../middleware/uploadCloudinary");
+const { uploadChatMedia } = require("../controllers/uploadController");
 
 router.route("/").get(requiredLogin, getConversations);
 router.route("/users").get(requiredLogin, getAllUsers);
@@ -42,10 +44,14 @@ router.route("/share").post(requiredLogin, shareMessage);
 router.route("/message/:id").delete(requiredLogin, deleteMessage);
 // router
 //   .route("/uploads")
-//   .post(requiredLogin, upload.single("file"), uploadFiles); // local store images
+ //   .post(requiredLogin, upload.single("file"), uploadFiles); // local store images
+// router
+//   .route("/uploads")
+//   .post(requiredLogin, messageUpload.single("file"), uploadFilesS3); // s3 store images
+
 router
   .route("/uploads")
-  .post(requiredLogin, messageUpload.single("file"), uploadFilesS3); // s3 store images
+  .post(requiredLogin, uploadCloudinary.single("file"), uploadChatMedia); // s3 store images
 router.route("/downloadFile/:id").get(requiredLogin, downloadChatFile);
 router.route("/downloadApk").get(downloadApkFile); // download apk file
 
