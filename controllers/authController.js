@@ -185,6 +185,7 @@ const getAccessToken = expressAsyncHandler(async (req, res) => {
       status: false,
       message: "user must be logged out.. please login again",
     });
+    return
   }
 
   //verify refreash token and produce access token

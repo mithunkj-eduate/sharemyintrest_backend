@@ -217,28 +217,24 @@ const uploadChatMedia = expressAsyncHandler(async (req, res) => {
       resourceType === "video"
         ? `snap_shareurinterest/messages/${req.user?._id}/videos/${Date.now()}-${cleanPublicId}${extension}`
         : `snap_shareurinterest/messages/${req.user?._id}/images/${Date.now()}-${cleanPublicId}${extension}`;
-
+    
     // upload s3
     const url = await uploadToS3(fileName, fileBuffer, resourceType);
+    
 
     // delete cloudinary original
     await cloudinary.uploader.destroy(publicId, {
       resource_type: resourceType,
     });
 
-    const reqUrl = url.split(
-      "https://snap.shareurinterest.com.s3.ap-south-1.amazonaws.com/",
-    );
-    // const url = `https://s3.ap-south-1.amazonaws.com/${bucketName}${reqUrl[1]}`;
-    const url1 = `${reqUrl[1]}`;
-
-    return res.status(200).json({
+    res.status(200).json({
       success: true,
       message: "Uploaded successfully",
-      mediaUrl: url1,
+      mediaUrl: fileName,
       name: req.file.originalname,
       size: req.file.size,
     });
+    return;
   } catch (error) {
     console.log(error);
     return res.status(500).json({
