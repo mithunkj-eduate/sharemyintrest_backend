@@ -66,6 +66,65 @@ const createMessage = expressAsyncHandler(async (req, res) => {
   res.json({ title: "message created", data: message });
 });
 
+
+// store in s3
+const createMessageS3 = expressAsyncHandler(async (req, res) => {
+  const { receivedBy, title, link } = req.body;
+
+  if (!receivedBy) {
+    res.status(400);
+    throw new Error("receivedBy is required");
+  }
+
+  // ✅ Detect media
+  let mediaUrl = null;
+  let mediaType = null;
+
+  if (req.file) {
+    // mediaUrl = req.file.location; // S3 URL
+    const reqUrl = req.file.location.split(
+      "https://snap.shareurinterest.com.s3.ap-south-1.amazonaws.com/",
+    );
+    mediaUrl = reqUrl[1];
+    mediaType = req.file.mimetype.startsWith("video") ? "video" : "image";
+  }
+
+  let message;
+
+  // ✅ Single receiver
+  if (typeof receivedBy === "string") {
+    message = new Message({
+      body: title,
+      postedBy: req.user._id,
+      receivedBy,
+      link,
+      photo: mediaUrl,
+      // mediaType,
+    });
+
+    await message.save();
+  }
+
+  // ✅ Multiple receivers
+  else if (Array.isArray(receivedBy)) {
+    const messagesList = receivedBy.map((userId) => ({
+      body: title,
+      postedBy: req.user._id,
+      receivedBy: userId,
+      link,
+      photo: mediaUrl,
+      //  messageType: mediaType,
+    }));
+
+    message = await Message.insertMany(messagesList);
+  }
+
+  res.json({
+    message: "Message created",
+    data: message,
+  });
+});
+
 //get messages
 const getMessages = expressAsyncHandler(async (req, res) => {
   if (!req.query.receivedBy) {
@@ -120,4 +179,4 @@ const downloadFile = expressAsyncHandler(async (req, res) => {
   }
 });
 
-module.exports = { createMessage, getMessages, downloadFile };
+module.exports = { createMessage, getMessages, downloadFile, createMessageS3 };

@@ -40,7 +40,7 @@ const follow = expressAsyncHandler(async (req, res) => {
     {
       $push: { followers: req.user._id },
     },
-    { new: true }
+    { new: true },
   )
     .select("-password")
     .populate("following", "userName Photo user")
@@ -50,7 +50,7 @@ const follow = expressAsyncHandler(async (req, res) => {
     {
       $push: { following: req.body.followId },
     },
-    { new: true }
+    { new: true },
   );
 
   res.json({ title: "follower", data: follower });
@@ -63,7 +63,7 @@ const unfollow = expressAsyncHandler(async (req, res) => {
     {
       $pull: { followers: req.user._id },
     },
-    { new: true }
+    { new: true },
   )
     .select("-password")
     .populate("following", "userName Photo user")
@@ -73,7 +73,7 @@ const unfollow = expressAsyncHandler(async (req, res) => {
     {
       $pull: { following: req.body.followId },
     },
-    { new: true }
+    { new: true },
   );
 
   res.json({ title: "unfollow", data: follower });
@@ -151,7 +151,7 @@ const followingpost = expressAsyncHandler(async (req, res) => {
 
   const updateViews = await Post.updateMany(
     { _id: { $in: postsIds } },
-    { $push: { views: req.user._id } }
+    { $push: { views: req.user._id } },
   );
 
   res.json({
@@ -162,7 +162,7 @@ const followingpost = expressAsyncHandler(async (req, res) => {
   });
 });
 
-//upload profile pic
+//upload profile pic local
 const uploadProfilePic = expressAsyncHandler(async (req, res) => {
   // const basePath = `${req.protocol}://${req.get("host")}/public`;
   const basePath = `/public`;
@@ -177,16 +177,41 @@ const uploadProfilePic = expressAsyncHandler(async (req, res) => {
     {
       $set: { Photo: `${basePath}/${req.file.filename}` },
     },
-    { new: true }
+    { new: true },
+  );
+  res.json({ title: "Added profile pic", data: profilePic });
+});
+
+//upload profile pic S#
+const uploadProfilePicS3 = expressAsyncHandler(async (req, res) => {
+  if (req.file == undefined) {
+    res.status(404);
+    throw new Error("required image");
+  }
+
+  const reqUrl = req.file.location.split(
+    "https://snap.shareurinterest.com.s3.ap-south-1.amazonaws.com/",
+  );
+  // const url = `https://s3.ap-south-1.amazonaws.com/${bucketName}${reqUrl[1]}`;
+  const url = `${reqUrl[1]}`;
+
+  const profilePic = await User.findByIdAndUpdate(
+    req.user._id,
+    {
+      $set: { Photo: url },
+    },
+    { new: true },
   );
   res.json({ title: "Added profile pic", data: profilePic });
 });
 
 //followlist get all following list
 const followList = expressAsyncHandler(async (req, res) => {
-  const follower = await User.find(req.user._id)
-    .populate("following", "userName Photo user")
-    .select("userName");
+  const follower = await User.find(req.user._id).populate({
+    path: "following",
+    select: "userName Photo user",
+    options: { limit: 20 }, // This limits the sub-list to 10 items
+  });
 
   res.json({ title: "follow list", data: follower });
 });
@@ -250,7 +275,7 @@ const createStory = expressAsyncHandler(async (req, res) => {
         },
       },
     },
-    { new: true }
+    { new: true },
   );
 
   res.json({ title: "story is create", data: story });
@@ -263,7 +288,7 @@ const deleteStory = expressAsyncHandler(async (req, res) => {
     {
       $pull: { story: { _id: req.body.storyId } },
     },
-    { new: true }
+    { new: true },
   );
 
   res.send(story);
@@ -280,4 +305,5 @@ module.exports = {
   getUsers,
   createStory,
   deleteStory,
+  uploadProfilePicS3,
 };

@@ -5,14 +5,26 @@ const upload = require("../helpers/multer");
 const {
   createMessage,
   getMessages,
-  downloadFile
+  downloadFile,
+  createMessageS3,
 } = require("../controllers/messageController");
 const requiredLogin = require("../middleware/requiredLogin");
+const { uploadToS3 } = require("../helpers/multerS3");
 
+const messageUpload = uploadToS3("messages");
+
+
+//upload local
+// router
+//   .route("/message")
+//   .post(requiredLogin, upload.single("photo"), createMessage);
+
+//upload s3
 router
   .route("/message")
-  .post(requiredLogin, upload.single("photo"), createMessage);
+  .post(requiredLogin, messageUpload.single("photo"), createMessageS3);
+
 router.route("/message?").get(requiredLogin, getMessages);
-router.route("/downloadFile/:id").get(downloadFile)
+router.route("/downloadFile/:id").get(downloadFile);
 
 module.exports = router;

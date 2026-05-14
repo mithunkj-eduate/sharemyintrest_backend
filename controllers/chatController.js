@@ -7,6 +7,10 @@ const { decryptMessage } = require("../utils/decryptMessage");
 const path = require("path");
 const fs = require("fs");
 
+const { GetObjectCommand } = require("@aws-sdk/client-s3");
+const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
+const { s3 } = require("../helpers/s3");
+
 // GET /api/chat
 const getConversations = expressAsyncHandler(async (req, res) => {
   const myId = req.user._id;
@@ -39,7 +43,7 @@ const getOrCreateConversationData = expressAsyncHandler(
     }
 
     return convo;
-  }
+  },
 );
 
 // POST /api/chat/conversation/:friendId
@@ -113,7 +117,7 @@ const markAsRead = expressAsyncHandler(async (req, res) => {
       receiver: req.user._id,
       isRead: false,
     },
-    { isRead: true }
+    { isRead: true },
   );
 
   res.json({ success: true });
@@ -161,6 +165,26 @@ const uploadFiles = expressAsyncHandler(async (req, res) => {
   });
 });
 
+// store in s3 message
+const uploadFilesS3 = expressAsyncHandler(async (req, res) => {
+  if (!req.file) {
+    res.status(400);
+    throw new Error("Media file is required");
+  }
+
+  const reqUrl = req.file.location.split(
+    "https://snap.shareurinterest.com.s3.ap-south-1.amazonaws.com/",
+  );
+  // const url = `https://s3.ap-south-1.amazonaws.com/${bucketName}${reqUrl[1]}`;
+  const url = `${reqUrl[1]}`;
+
+  res.json({
+    mediaUrl: url,
+    name: req.file.originalname,
+    size: req.file.size,
+  });
+});
+
 const shareMessage = expressAsyncHandler(async (req, res) => {
   const { receivers, text, messageType } = req.body;
 
@@ -175,7 +199,7 @@ const shareMessage = expressAsyncHandler(async (req, res) => {
         text: encrypt(text),
         messageType: messageType,
       };
-    })
+    }),
   );
 
   const saved = await Message.insertMany(messages);
@@ -186,7 +210,7 @@ const shareMessage = expressAsyncHandler(async (req, res) => {
 // GET
 // download image
 //  /api/chat/downloadFile/${messageId}
-const downloadChatFile = expressAsyncHandler(async (req, res) => {
+const downloadChatFileLocal = expressAsyncHandler(async (req, res) => {
   const message = await Message.findById(req.params.id);
 
   if (!message) {
@@ -217,6 +241,129 @@ const downloadChatFile = expressAsyncHandler(async (req, res) => {
   }
 });
 
+
+
+
+// const downloadChatFile = expressAsyncHandler(async (req, res) => {
+//   const message = await Message.findById(req.params.id);
+
+//   if (!message) {
+//     res.status(404);
+//     throw new Error("Message not found");
+//   }
+
+//   if (!message.media) {
+//     return res.status(404).send("File not found");
+//   }
+
+//   try {
+//     const key = message.media.startsWith("/")
+//       ? message.media.slice(1)
+//       : message.media;
+
+//     const command = new GetObjectCommand({
+//       Bucket: process.env.AWS_BUCKET_NAME,
+//       Key: key,
+//     });
+
+//     const response = await s3.send(command);
+
+//     const fileName = key.split("/").pop();
+
+//     res.setHeader(
+//       "Content-Type",
+//       response.ContentType || "application/octet-stream"
+//     );
+
+//     res.setHeader(
+//       "Content-Disposition",
+//       `attachment; filename="${fileName}"`
+//     );
+
+//     res.setHeader("Cache-Control", "no-cache");
+
+//     response.Body.pipe(res);
+//   } catch (error) {
+//     console.error("Download Error:", error);
+//     res.status(500).send("Download failed");
+//   }
+// });
+
+
+const downloadChatFile = expressAsyncHandler(async (req, res) => {
+  const message = await Message.findById(req.params.id);
+
+  if (!message) {
+    res.status(404);
+    throw new Error("Message not found");
+  }
+
+  if (!message.media) {
+    return res.status(404).send("File not found");
+  }
+
+  // req.user comes from auth middleware
+  if (!req.user) {
+    return res.status(401).json({ message: "Unauthorized" });
+  }
+
+  const key = message.media.startsWith("/")
+    ? message.media.slice(1)
+    : message.media;
+
+  const command = new GetObjectCommand({
+    Bucket: process.env.AWS_BUCKET_NAME,
+    Key: key,
+    ResponseContentDisposition: `attachment; filename="${key.split("/").pop()}"`,
+  });
+
+  const signedUrl = await getSignedUrl(s3, command, {
+    expiresIn: 60, // 1 minute
+  });
+
+  res.json({
+    success: true,
+    url: signedUrl,
+  });
+});
+
+
+
+const downloadApkFile = expressAsyncHandler(async (req, res) => {
+  try {
+    const key = "snap_shareurinterest/apk/snap-shareurinterest.apk";
+
+    const command = new GetObjectCommand({
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: key,
+    });
+
+    const response = await s3.send(command);
+
+    res.setHeader(
+      "Content-Type",
+      "application/vnd.android.package-archive"
+    );
+
+    res.setHeader(
+      "Content-Disposition",
+      'attachment; filename="snap-shareurinterest.apk"'
+    );
+
+    res.setHeader("Cache-Control", "no-cache");
+
+    response.Body.pipe(res);
+  } catch (error) {
+    console.error("APK Download Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Download failed",
+    });
+  }
+});
+
+
+
 module.exports = {
   getConversations,
   getOrCreateConversation,
@@ -229,4 +376,6 @@ module.exports = {
   uploadFiles,
   shareMessage,
   downloadChatFile,
+  uploadFilesS3,
+  downloadApkFile
 };

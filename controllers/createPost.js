@@ -2,6 +2,12 @@ const express = require("express");
 const mongoose = require("mongoose");
 const Post = require("../model/post");
 const expressAsyncHandler = require("express-async-handler");
+const { uploadToS3 } = require("../utils/S3Upload");
+const { processImage, processVideo } = require("../utils/processMedia");
+const path = require("path");
+const fs = require("fs");
+const logger = require("../helpers/logger");
+
 
 //create post
 const createPost = expressAsyncHandler(async (req, res) => {
@@ -67,6 +73,41 @@ const createNewPost = expressAsyncHandler(async (req, res) => {
   res.json({ title: "Post created", data: post });
 });
 
+// store s3 images POST METHOD
+const createNewPostS3Old = expressAsyncHandler(async (req, res) => {
+  const bucketName = process.env.AWS_BUCKET_NAME ?? "";
+  if (!req.file) {
+    res.status(400);
+    throw new Error("Media file is required");
+  }
+
+  const isVideo = req.file.mimetype.startsWith("video");
+
+  const reqUrl = req.file.location.split(
+    "https://snap.shareurinterest.com.s3.ap-south-1.amazonaws.com/",
+  );
+  // const url = `https://s3.ap-south-1.amazonaws.com/${bucketName}${reqUrl[1]}`;
+  const url = `${reqUrl[1]}`;
+
+  const post = new Post({
+    body: req.body.title,
+    photo: url, // S3 URL
+    mediaType: isVideo ? "video" : "image",
+    postedBy: req.user,
+    location: {
+      type: "Point",
+      coordinates: [12.907637572103615, 77.61350705305202],
+    },
+  });
+
+  await post.save();
+
+  res.json({
+    message: "Post created",
+    data: post,
+  });
+});
+
 //get allpost
 const allposts = expressAsyncHandler(async (req, res) => {
   let limit = req.query.limit;
@@ -80,14 +121,13 @@ const allposts = expressAsyncHandler(async (req, res) => {
     .limit(parseInt(limit))
     .sort("-createdAt");
 
-
-    // const allPost = await Post.find()
-    // .sort({ createdAt: -1 })
-    // .skip(Number(skip))
-    // .limit(Number(limit))
-    // .populate("postedBy", "_id userName Photo followers following")
-    // .populate("comments.postedBy", "_id userName user Photo createdAt")
-    // .lean();
+  // const allPost = await Post.find()
+  // .sort({ createdAt: -1 })
+  // .skip(Number(skip))
+  // .limit(Number(limit))
+  // .populate("postedBy", "_id userName Photo followers following")
+  // .populate("comments.postedBy", "_id userName user Photo createdAt")
+  // .lean();
   // const highLike = await Post.aggregate([
   //   { $unwind: "$likes" },
   //   { $sortByCount: "$likes" },
@@ -137,7 +177,7 @@ const likepost = expressAsyncHandler(async (req, res) => {
     {
       $push: { likes: req.user._id },
     },
-    { new: true }
+    { new: true },
   )
     .populate("postedBy", "_id userName Photo user")
     .populate("comments.postedBy", "_id userName Photo user createdAt");
@@ -156,7 +196,7 @@ const unlikepost = expressAsyncHandler(async (req, res) => {
     {
       $pull: { likes: req.user._id },
     },
-    { new: true }
+    { new: true },
   )
     .populate("postedBy", "_id userName Photo user")
     .populate("comments.postedBy", "_id userName Photo user createdAt");
@@ -184,7 +224,7 @@ const commentPost = expressAsyncHandler(async (req, res) => {
     {
       $push: { comments: comment },
     },
-    { new: true }
+    { new: true },
   )
     .populate("comments.postedBy", "_id userName Photo user createdAt")
     .populate("postedBy", "_id userName Photo user");
@@ -196,7 +236,7 @@ const commentPost = expressAsyncHandler(async (req, res) => {
 const deletePost = expressAsyncHandler(async (req, res) => {
   const deleteSinglePost = await Post.findById(req.params.postId).populate(
     "postedBy",
-    "_id"
+    "_id",
   );
 
   if (!deleteSinglePost) {
@@ -218,7 +258,7 @@ const deletePost = expressAsyncHandler(async (req, res) => {
 const getPost = expressAsyncHandler(async (req, res) => {
   const post = await Post.findById(req.params.id).populate(
     "postedBy",
-    "userName Photo"
+    "userName Photo",
   );
   if (post == null) {
     res.status(404);
@@ -227,6 +267,93 @@ const getPost = expressAsyncHandler(async (req, res) => {
 
   res.json({ title: "single post", data: post });
 });
+
+// upload images or videls compress and watter mark to upload to s3
+const createNewPostS3 = async (req, res) => {
+  const tempDir = path.join(__dirname, "../temp");
+
+  if (!fs.existsSync(tempDir)) {
+    fs.mkdirSync(tempDir, { recursive: true });
+  }
+
+  const unique = Date.now();
+
+  const tempInput = path.join(tempDir, `input-${unique}.mp4`);
+  const tempOutput = path.join(tempDir, `output-${unique}.mp4`);
+  try {
+    const file = req.file;
+
+    if (!file) {
+      return res.status(400).json({
+        message: "No file uploaded",
+      });
+    }
+
+    let finalBuffer;
+    let key;
+    let mediaType;
+
+    if (file.mimetype.startsWith("image")) {
+      finalBuffer = await processImage(file.buffer);
+      // key = `uploads/${Date.now()}.jpg`;
+      key = `snap_shareurinterest/posts/${req.user?._id}/images/${Date.now()}-${file.originalname}`;
+      mediaType = "image";
+    } else if (file.mimetype.startsWith("video")) {
+      fs.writeFileSync(tempInput, file.buffer);
+
+      await processVideo(tempInput, tempOutput);
+
+      finalBuffer = fs.readFileSync(tempOutput);
+      // key = `uploads/${Date.now()}.mp4`;
+      key = `snap_shareurinterest/reels/${req.user?._id}/videos/${Date.now()}-${file.originalname}`;
+      mediaType = "video";
+
+      fs.unlinkSync(tempInput);
+      fs.unlinkSync(tempOutput);
+    }
+
+    const url = await uploadToS3(key, finalBuffer, file.mimetype);
+
+    console.log(url, "url");
+
+    const post = new Post({
+      body: req.body.title,
+      photo: key, // S3 URL
+      mediaType: mediaType,
+      postedBy: req.user,
+      location: {
+        type: "Point",
+        coordinates: [12.907637572103615, 77.61350705305202],
+      },
+    });
+
+    await post.save();
+
+    res.json({
+      message: "Post created",
+      data: post,
+    });
+  } catch (error) {
+    console.log(error);
+      logger.error("upload error", error);
+    
+    res.status(500).json({
+      message: "Upload failed",
+    });
+  } finally {
+    try {
+      if (tempInput && fs.existsSync(tempInput)) {
+        fs.unlinkSync(tempInput);
+      }
+
+      if (tempOutput && fs.existsSync(tempOutput)) {
+        fs.unlinkSync(tempOutput);
+      }
+    } catch (cleanupError) {
+      console.log("Cleanup error:", cleanupError);
+    }
+  }
+};
 
 module.exports = {
   createPost,
@@ -238,4 +365,5 @@ module.exports = {
   commentPost,
   deletePost,
   getPost,
+  createNewPostS3,
 };
