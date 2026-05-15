@@ -21,11 +21,34 @@ const uploadMedia = expressAsyncHandler(async (req, res) => {
       : "image";
 
     // transformed cloudinary URL
+    // const transformedUrl = cloudinary.url(publicId, {
+    //   resource_type: resourceType,
+    //   fetch_format: "auto",
+    //   quality: "auto",
+    //   transformation: [
+    //     {
+    //       overlay: "watermark",
+    //       width: 40,
+    //       crop: "scale",
+    //       gravity: "south_east",
+    //       opacity: 70,
+    //       x: 10,
+    //       y: 10,
+    //     },
+    //   ],
+    // });
+
     const transformedUrl = cloudinary.url(publicId, {
-      resource_type: resourceType,
+      resource_type: "video",
       fetch_format: "auto",
-      quality: "auto",
+      quality: "auto:good",
       transformation: [
+        {
+          width: 720,
+          crop: "limit",
+          video_codec: "auto",
+          bit_rate: "500k",
+        },
         {
           overlay: "watermark",
           width: 40,
@@ -185,11 +208,34 @@ const uploadChatMedia = expressAsyncHandler(async (req, res) => {
       : "image";
 
     // transformed cloudinary URL
+    // const transformedUrl = cloudinary.url(publicId, {
+    //   resource_type: resourceType,
+    //   fetch_format: "auto",
+    //   quality: "auto",
+    //   transformation: [
+    //     {
+    //       overlay: "watermark",
+    //       width: 40,
+    //       crop: "scale",
+    //       gravity: "south_east",
+    //       opacity: 70,
+    //       x: 10,
+    //       y: 10,
+    //     },
+    //   ],
+    // });
+
     const transformedUrl = cloudinary.url(publicId, {
-      resource_type: resourceType,
+      resource_type: "video",
       fetch_format: "auto",
-      quality: "auto",
+      quality: "auto:good",
       transformation: [
+        {
+          width: 720,
+          crop: "limit",
+          video_codec: "auto",
+          bit_rate: "500k",
+        },
         {
           overlay: "watermark",
           width: 40,
@@ -217,10 +263,9 @@ const uploadChatMedia = expressAsyncHandler(async (req, res) => {
       resourceType === "video"
         ? `snap_shareurinterest/messages/${req.user?._id}/videos/${Date.now()}-${cleanPublicId}${extension}`
         : `snap_shareurinterest/messages/${req.user?._id}/images/${Date.now()}-${cleanPublicId}${extension}`;
-    
+
     // upload s3
     const url = await uploadToS3(fileName, fileBuffer, resourceType);
-    
 
     // delete cloudinary original
     await cloudinary.uploader.destroy(publicId, {
